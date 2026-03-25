@@ -1,0 +1,93 @@
+services:
+    # 7. Base de datos PostgreSQL para Laravel
+  laravel-api-db-postgresql:
+    image: pgvector/pgvector:pg17
+    container_name: laravel-api-db-postgresql
+    ports:
+      - "5432:5432"
+    env_file:
+      - .env.docker.postgresql
+    volumes:
+      - laravel_api_postgresql_data:/var/lib/postgresql/data
+    networks:
+      - laravel_api_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U laravel-api-user -d laravel-api-db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5  
+      start_period: 30s
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '0.5'
+          memory: 1G
+
+  # 8. Base de datos Redis para Laravel (caché, colas, sesiones)
+  laravel-api-db-redis:
+    image: redis:7-alpine
+    container_name: laravel-api-db-redis
+    ports:
+      - "6379:6379"
+    command: >
+      redis-server
+      --appendonly yes
+      --appendfsync everysec
+      --maxmemory 4gb
+      --maxmemory-policy allkeys-lru
+      --save 900 1
+      --save 300 10
+      --save 60 10000
+      --tcp-backlog 511
+      --timeout 0
+      --tcp-keepalive 300
+      --databases 16
+      --maxclients 10000
+      --slowlog-log-slower-than 10000
+      --slowlog-max-len 128
+      --latency-monitor-threshold 100
+    volumes:
+      - laravel_api_redis_data:/data
+    networks:
+      - laravel_api_network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 5G
+        reservations:
+          cpus: '0.5'
+          memory: 1G
+
+networks:
+  laravel_api_network:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.28.0.0/16
+          gateway: 172.28.0.1
+    driver_opts:
+      com.docker.network.bridge.name: br-laravel-api
+      com.docker.network.bridge.enable_ip_masquerade: "true"
+      com.docker.network.driver.mtu: 1500
+
+volumes:
+  laravel_api_redis_data:
+  laravel_api_postgresql_data:
+  laravel_api_logs:
+    # Named volume para logs compartidos entre todas las réplicas
+    # Permite que LogViewer vea logs de todos los contenedores
+    # Persiste logs entre reinicios de contenedores
+    driver: local
