@@ -1,6 +1,6 @@
 <?php
 
-use App\Models\User;
+use Modules\Auth\Models\User;
 
 return [
 
@@ -96,7 +96,7 @@ return [
         'users' => [
             'provider' => 'users',
             'table' => env('AUTH_PASSWORD_RESET_TOKEN_TABLE', 'password_reset_tokens'),
-            'expire' => 60,
+            'expire' => 15,
             'throttle' => 60,
         ],
     ],
@@ -114,4 +114,110 @@ return [
 
     'password_timeout' => env('AUTH_PASSWORD_TIMEOUT', 10800),
 
+    'login' => [
+
+        /*
+        |--------------------------------------------------------------------------
+        | IP-Based Rate Limiting (Middleware Layer)
+        |--------------------------------------------------------------------------
+        |
+        | Límite por dirección IP para prevenir ataques de fuerza bruta desde
+        | la misma ubicación. Se ejecuta ANTES del controller.
+        |
+        | - max_attempts: Número máximo de intentos permitidos
+        | - decay_minutes: Tiempo en minutos para resetear el contador
+        |
+        | Response: HTTP 429 (Too Many Requests)
+        | Bypasseable: Sí (cambiando IP/VPN)
+        |
+        */
+        'ip' => [
+            'max_attempts' => (int) env('LOGIN_RATE_LIMIT_IP_MAX_ATTEMPTS', 3),
+            'decay_minutes' => (int) env('LOGIN_RATE_LIMIT_IP_DECAY_MINUTES', 1),
+        ],
+
+        /*
+        |--------------------------------------------------------------------------
+        | Email-Based Rate Limiting (Middleware Layer)
+        |--------------------------------------------------------------------------
+        |
+        | Límite por email para prevenir ataques distribuidos sobre una cuenta
+        | específica. Se ejecuta ANTES del controller.
+        |
+        | - max_attempts: Número máximo de intentos permitidos
+        | - decay_minutes: Tiempo en minutos para resetear el contador
+        |
+        | Response: HTTP 429 (Too Many Requests)
+        | Bypasseable: No (limita por email independiente de la IP)
+        |
+        */
+        'email' => [
+            'max_attempts' => (int) env('LOGIN_RATE_LIMIT_EMAIL_MAX_ATTEMPTS', 10),
+            'decay_minutes' => (int) env('LOGIN_RATE_LIMIT_EMAIL_DECAY_MINUTES', 60),
+        ],
+
+        /*
+        |--------------------------------------------------------------------------
+        | Failed Attempts Rate Limiting (Action Layer)
+        |--------------------------------------------------------------------------
+        |
+        | Límite por combinación de email + IP para intentos FALLIDOS específicos.
+        | Se ejecuta DENTRO del AuthenticateUserAction.
+        |
+        | - max_attempts: Número máximo de intentos fallidos permitidos
+        | - decay_minutes: Tiempo en minutos para resetear el contador
+        |
+        | Response: HTTP 422 (Validation Error)
+        | Evento: Lockout disparado para listeners personalizados
+        | Bypasseable: Sí (cambiando IP o email)
+        |
+        */
+        'action' => [
+            'max_attempts' => (int) env('LOGIN_RATE_LIMIT_ACTION_MAX_ATTEMPTS', 3),
+            'decay_minutes' => (int) env('LOGIN_RATE_LIMIT_ACTION_DECAY_MINUTES', 1),
+        ],
+
+        /*
+        |--------------------------------------------------------------------------
+        | Safety Net Rate Limiting (Middleware Layer)
+        |--------------------------------------------------------------------------
+        |
+        | Protección adicional contra ataques DDoS MUY agresivos con límites
+        | extremadamente altos que NO interfieren con el flujo normal del sistema.
+        |
+        | Este es un "safety net" (red de seguridad) como última línea de defensa
+        | contra ataques de más de 100+ req/seg desde la misma IP.
+        |
+        | - max_attempts: Número muy alto de intentos (30+ por minuto)
+        | - decay_minutes: Tiempo en minutos para resetear el contador
+        |
+        | Response: HTTP 422 (Validation Error) con mensaje personalizado
+        | Bypasseable: Sí (cambiando IP)
+        |
+        */
+        'safety_net' => [
+            'max_attempts' => (int) env('SAFETY_NET_MAX_ATTEMPTS', 30),
+            'decay_minutes' => (int) env('SAFETY_NET_DECAY_MINUTES', 1),
+        ],
+
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Password Security Configuration
+    |--------------------------------------------------------------------------
+    |
+    | Configuración de seguridad para contraseñas.
+    |
+    */
+
+    // Número de contraseñas anteriores que no se pueden reutilizar
+    // Nota: Las contraseñas de más de 1 año se pueden reutilizar
+    'password_history_limit' => (int) env('PASSWORD_HISTORY_LIMIT', 12),
+
+    // Días hasta que la contraseña expire y deba ser cambiada
+    'password_expiration_days' => (int) env('PASSWORD_EXPIRATION_DAYS', 30),
+
+    // Días de advertencia antes de que expire (mostrar mensaje al usuario)
+    'password_expiration_warning_days' => (int) env('PASSWORD_EXPIRATION_WARNING_DAYS', 5),
 ];

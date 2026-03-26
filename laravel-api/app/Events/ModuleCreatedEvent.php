@@ -19,8 +19,8 @@ class ModuleCreatedEvent
     use Dispatchable, SerializesModels;
 
     /**
-     * @param string $moduleName Nombre del módulo creado (ej: "TestExample")
-     * @param string $modulePath Ruta absoluta al módulo (ej: "/path/to/Modules/TestExample")
+     * @param  string  $moduleName  Nombre del módulo creado (ej: "TestExample")
+     * @param  string  $modulePath  Ruta absoluta al módulo (ej: "/path/to/Modules/TestExample")
      */
     public function __construct(
         public readonly string $moduleName,
