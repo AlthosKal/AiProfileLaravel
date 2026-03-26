@@ -3,21 +3,21 @@
 namespace Modules\Auth\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Auth\LoginRequest;
-use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
+use Modules\Auth\Actions\LoginAction;
+use Modules\Auth\Http\Data\LoginData;
 
 class AuthenticatedSessionController extends Controller
 {
     /**
      * Handle an incoming authentication request.
      */
-    public function store(LoginRequest $request): Response
+    public function store(LoginData $data, LoginAction $action): Response
     {
-        $request->authenticate();
+        $action->login($data, request()->ip());
 
-        $request->session()->regenerate();
+        request()->session()->regenerate();
 
         return response()->noContent();
     }
@@ -25,13 +25,13 @@ class AuthenticatedSessionController extends Controller
     /**
      * Destroy an authenticated session.
      */
-    public function destroy(Request $request): Response
+    public function destroy(): Response
     {
         Auth::guard('web')->logout();
 
-        $request->session()->invalidate();
+        request()->session()->invalidate();
 
-        $request->session()->regenerateToken();
+        request()->session()->regenerateToken();
 
         return response()->noContent();
     }
