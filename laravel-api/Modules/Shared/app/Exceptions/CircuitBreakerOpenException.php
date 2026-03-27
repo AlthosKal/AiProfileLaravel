@@ -2,9 +2,9 @@
 
 namespace Modules\Shared\Exceptions;
 
-use Exception;
+use Modules\Shared\Enums\SharedErrorCode;
 
-class CircuitBreakerOpenException extends Exception
+class CircuitBreakerOpenException extends BaseException
 {
     public function __construct(
         public readonly string $serviceName,
@@ -12,7 +12,8 @@ class CircuitBreakerOpenException extends Exception
         public readonly int $recoveryTimeout,
     ) {
         parent::__construct(
-            "Circuit Breaker OPEN for service '{$serviceName}'. Failures: {$failureCount}. Retry after {$recoveryTimeout}s."
+            errorCode: SharedErrorCode::CircuitBreakerOpen,
+            message: "Cortocircuito ABIERTO para el servicio '$serviceName'. Fallos: $failureCount. Reintentar después de {$recoveryTimeout}s.",
         );
     }
 }

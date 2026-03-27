@@ -123,4 +123,25 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
+    /*
+|--------------------------------------------------------------------------
+| Circuit Breaker Configuration
+|--------------------------------------------------------------------------
+|
+| Configuración del Circuit Breaker para manejo de fallos de reCAPTCHA.
+| El Circuit Breaker previene cascadas de fallos cuando Google reCAPTCHA
+| no está disponible.
+|
+| - failure_threshold: Número de fallos consecutivos antes de abrir el circuit
+| - recovery_timeout: Segundos de espera antes de intentar recovery
+| - success_threshold: Éxitos consecutivos necesarios para cerrar el circuit
+|
+*/
+
+    'circuit_breaker' => [
+        'failure_threshold' => (int) env('CIRCUIT_BREAKER_FAILURE_THRESHOLD', 3),
+        'recovery_timeout' => (int) env('CIRCUIT_BREAKER_RECOVERY_TIMEOUT', 60),
+        'success_threshold' => (int) env('CIRCUIT_BREAKER_SUCCESS_THRESHOLD', 2),
+    ],
+
 ];

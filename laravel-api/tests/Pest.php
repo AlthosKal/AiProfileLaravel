@@ -21,6 +21,9 @@ pest()->extend(TestCase::class)
 pest()->extend(TestCase::class)
     ->in('../Modules/Shared/tests/Feature');
 
+pest()->extend(TestCase::class)
+    ->in('../Modules/Auth/tests/Feature');
+
 /*
 |--------------------------------------------------------------------------
 | Expectations

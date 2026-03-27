@@ -10,15 +10,11 @@ class CircuitBreakerOpened
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    /**
-     * @param  array<string, mixed>  $context
-     */
     public function __construct(
         public readonly string $serviceName,
         public readonly int $failureCount,
         public readonly int $failureThreshold,
         public readonly int $recoveryTimeout,
-        public readonly array $context = [],
     ) {}
 
     /**
@@ -31,7 +27,6 @@ class CircuitBreakerOpened
             'failure_count' => $this->failureCount,
             'failure_threshold' => $this->failureThreshold,
             'recovery_timeout' => $this->recoveryTimeout,
-            'context' => $this->context,
             'timestamp' => now()->toIso8601String(),
         ];
     }

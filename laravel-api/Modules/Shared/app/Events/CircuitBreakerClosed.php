@@ -10,13 +10,9 @@ class CircuitBreakerClosed
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    /**
-     * @param  array<string, mixed>  $context
-     */
     public function __construct(
         public readonly string $serviceName,
         public readonly string $previousState,
-        public readonly array $context = [],
     ) {}
 
     /**
@@ -27,7 +23,6 @@ class CircuitBreakerClosed
         return [
             'service_name' => $this->serviceName,
             'previous_state' => $this->previousState,
-            'context' => $this->context,
             'timestamp' => now()->toIso8601String(),
         ];
     }
