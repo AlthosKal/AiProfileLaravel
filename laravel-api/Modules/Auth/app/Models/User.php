@@ -150,6 +150,16 @@ class User extends Authenticatable implements MustVerifyEmail
     }
 
     /**
+     * Verificar si está bloqueado temporalmente
+     */
+    public function isTemporarilyBlocked(): bool
+    {
+        return $this->security_status->isTemporarilyBlocked()
+            && $this->blocked_until
+            && $this->blocked_until->isFuture();
+    }
+
+    /**
      * Verificar si está bloqueado permanentemente
      */
     public function isPermanentlyBlocked(): bool

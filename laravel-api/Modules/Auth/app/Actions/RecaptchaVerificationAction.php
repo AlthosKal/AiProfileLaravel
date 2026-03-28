@@ -36,7 +36,6 @@ class RecaptchaVerificationAction
     /**
      * Verificación real con Google reCAPTCHA API.
      *
-     *
      * @throws ConnectionException
      * @throws RequestException
      * @throws Throwable
@@ -45,7 +44,7 @@ class RecaptchaVerificationAction
     {
         $data = Http::timeout(config('recaptchav3.timeout_seconds'))
             ->asForm()
-            ->post(config('recaptchav3.url_recaptcha_site_verify'), [
+            ->post(config('recaptchav3.origin'), [
                 'secret' => config('recaptchav3.secret'),
                 'response' => $token,
             ])

@@ -19,10 +19,12 @@ class UserSecurityStateBuilder extends Builder
      * JOIN con tabla users para obtener created_at/updated_at
      *
      * La vista no incluye timestamps, así que hacemos JOIN
+     *
+     * @return $this
      */
     public function withTimestamps(): self
     {
-        $this->join('users', 'users.id', '=', 'user_current_security_state.user_id')
+        $this->join('users', 'users.email', '=', 'user_current_security_state.user_id')
             ->select('user_current_security_state.*', 'users.created_at', 'users.updated_at');
 
         return $this;
@@ -32,6 +34,8 @@ class UserSecurityStateBuilder extends Builder
      * Ordenar por más recientes primero
      *
      * Asume que ya se hizo el JOIN con users
+     *
+     * @return $this
      */
     public function orderByRecent(): self
     {
@@ -42,6 +46,8 @@ class UserSecurityStateBuilder extends Builder
 
     /**
      * Buscar por nombre o email
+     *
+     * @return $this
      */
     public function search(string $term): self
     {
@@ -55,6 +61,8 @@ class UserSecurityStateBuilder extends Builder
 
     /**
      * Solo usuarios bloqueados (temporal o permanente)
+     *
+     * @return $this
      */
     public function onlyBlocked(): self
     {
@@ -65,6 +73,8 @@ class UserSecurityStateBuilder extends Builder
 
     /**
      * Solo bloqueos temporales expirados
+     *
+     * @return $this
      */
     public function expiredBlocks(): self
     {
@@ -79,8 +89,6 @@ class UserSecurityStateBuilder extends Builder
      *
      * Query única que obtiene todos los contadores en una sola consulta.
      * Útil para dashboards administrativos.
-     *
-     * @return array<string, int|float>
      */
     public function getSecurityStats(): array
     {

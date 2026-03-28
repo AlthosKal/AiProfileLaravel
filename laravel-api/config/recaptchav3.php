@@ -24,6 +24,5 @@ return [
 |
 */
     'timeout_seconds' => (int) env('RECAPTCHA_TIMEOUT_SECONDS', 5),
-    'url_recaptcha_site_verify' => env('RECAPTCHAV3_URL_RECAPTCHA_SITEVERIFY', 'https://www.google.com/recaptcha/api/siteverify'),
     'min_score' => env('RECAPTCHAV3_MINSCORE', 0.5),
 ];

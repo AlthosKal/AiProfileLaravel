@@ -7,11 +7,14 @@ use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 use Modules\Auth\Actions\LoginAction;
 use Modules\Auth\Http\Data\LoginData;
+use Throwable;
 
 class AuthenticatedSessionController extends Controller
 {
     /**
      * Handle an incoming authentication request.
+     *
+     * @throws Throwable
      */
     public function store(LoginData $data, LoginAction $action): Response
     {

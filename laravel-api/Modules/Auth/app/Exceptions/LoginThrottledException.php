@@ -9,6 +9,9 @@ use Modules\Shared\Exceptions\BaseException;
 
 class LoginThrottledException extends BaseException
 {
+    /**
+     * @var int
+     */
     protected $code = 429;
 
     public function __construct(

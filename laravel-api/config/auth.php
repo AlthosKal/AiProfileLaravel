@@ -158,27 +158,6 @@ return [
 
         /*
         |--------------------------------------------------------------------------
-        | Failed Attempts Rate Limiting (Action Layer)
-        |--------------------------------------------------------------------------
-        |
-        | Límite por combinación de email + IP para intentos FALLIDOS específicos.
-        | Se ejecuta DENTRO del AuthenticateUserAction.
-        |
-        | - max_attempts: Número máximo de intentos fallidos permitidos
-        | - decay_minutes: Tiempo en minutos para resetear el contador
-        |
-        | Response: HTTP 422 (Validation Error)
-        | Evento: Lockout disparado para listeners personalizados
-        | Bypasseable: Sí (cambiando IP o email)
-        |
-        */
-        'action' => [
-            'max_attempts' => (int) env('LOGIN_RATE_LIMIT_ACTION_MAX_ATTEMPTS', 3),
-            'decay_minutes' => (int) env('LOGIN_RATE_LIMIT_ACTION_DECAY_MINUTES', 1),
-        ],
-
-        /*
-        |--------------------------------------------------------------------------
         | Safety Net Rate Limiting (Middleware Layer)
         |--------------------------------------------------------------------------
         |
