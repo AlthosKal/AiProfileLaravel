@@ -5,9 +5,9 @@ namespace Modules\Shared\Stores;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Modules\Shared\Enums\CircuitBreakerStatus;
-use Modules\Shared\Events\CircuitBreakerClosed;
-use Modules\Shared\Events\CircuitBreakerHalfOpen;
-use Modules\Shared\Events\CircuitBreakerOpened;
+use Modules\Shared\Events\CircuitBreakerClosedEvent;
+use Modules\Shared\Events\CircuitBreakerHalfOpenEvent;
+use Modules\Shared\Events\CircuitBreakerOpenedEvent;
 use Modules\Shared\Interfaces\CircuitBreakerStoreInterface;
 use Throwable;
 
@@ -82,7 +82,7 @@ readonly class CircuitBreakerStore implements CircuitBreakerStoreInterface
 
         Log::info("Cortacircuitos: Intentando la recuperación de $this->serviceName");
 
-        event(new CircuitBreakerHalfOpen(
+        event(new CircuitBreakerHalfOpenEvent(
             serviceName: $this->serviceName,
             successThreshold: $this->successThreshold,
         ));
@@ -153,7 +153,7 @@ readonly class CircuitBreakerStore implements CircuitBreakerStoreInterface
             'recovery_timeout' => $this->recoveryTimeout,
         ]);
 
-        event(new CircuitBreakerOpened(
+        event(new CircuitBreakerOpenedEvent(
             serviceName: $this->serviceName,
             failureCount: $this->getFailureCount(),
             failureThreshold: $this->failureThreshold,
@@ -174,7 +174,7 @@ readonly class CircuitBreakerStore implements CircuitBreakerStoreInterface
             'previous_state' => $previousState->value,
         ]);
 
-        event(new CircuitBreakerClosed(
+        event(new CircuitBreakerClosedEvent(
             serviceName: $this->serviceName,
             previousState: $previousState->value,
         ));

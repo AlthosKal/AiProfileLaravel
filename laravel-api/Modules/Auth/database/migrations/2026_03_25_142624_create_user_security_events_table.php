@@ -14,8 +14,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('user_security_events', function (Blueprint $table) {
-            $table->id()->comment('Identificador único del evento de seguridad');
-            $table->uuid('user_id')->comment('Referencia al usuario sobre el cual ocurrió el evento');
+            $table->uuid('id')->primary()->comment('Identificador único del evento de seguridad');
+            $table->string('user_email')->comment('Referencia al usuario sobre el cual ocurrió el evento');
             $eventTypes = array_merge(
                 array_map(fn ($case) => $case->value, SecurityStatusEnum::cases()),
                 array_map(fn ($case) => $case->value, SecurityEventTypeEnum::cases())
@@ -31,25 +31,25 @@ return new class extends Migration
             $table->timestamps();
 
             // Foreign keys
-            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+            $table->foreign('user_email')->references('email')->on('users')->onDelete('cascade');
 
             // Índices básicos para consultas frecuentes
-            $table->index('user_id');
+            $table->index('user_email');
             $table->index('event_type');
             $table->index('event_at');
             $table->index('ip_address');
 
             // Índice compuesto para consultas de eventos por usuario
-            $table->index(['user_id', 'event_type', 'event_at'], 'user_security_events_user_type_date_idx');
+            $table->index(['user_email', 'event_type', 'event_at'], 'user_security_events_user_type_date_idx');
         });
-        // Índices especiales con DB::statement (deben ejecutarse DESPUÉS de crear la tabla)
+        // Índices especiales solo en PostgreSQL (sintaxis no compatible con SQLite)
+        if (DB::getDriverName() === 'pgsql') {
+            // Índice para obtener último evento por usuario (para la vista)
+            DB::statement('CREATE INDEX user_security_events_user_latest_idx ON user_security_events (user_email, event_type, event_at DESC)');
 
-        // Índice para obtener último evento por usuario (para la vista)
-        // Orden DESC en event_at para LIMIT 1 rápido
-        DB::statement('CREATE INDEX user_security_events_user_latest_idx ON user_security_events (user_id, event_type, event_at DESC)');
-
-        // Índice parcial para conteo de bloqueos (solo eventos de bloqueo)
-        DB::statement("CREATE INDEX user_security_events_user_blocks_idx ON user_security_events (user_id, event_type) WHERE event_type IN ('temporary_block', 'permanent_block')");
+            // Índice parcial para conteo de bloqueos (solo eventos de bloqueo)
+            DB::statement("CREATE INDEX user_security_events_user_blocks_idx ON user_security_events (user_email, event_type) WHERE event_type IN ('temporarily_blocked', 'permanently_blocked')");
+        }
     }
 
     /**

@@ -2,22 +2,30 @@
 
 namespace Modules\Auth\Models;
 
+use Eloquent;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
+use Modules\Auth\Enums\SecurityEventTypeEnum;
+use Modules\Auth\Enums\SecurityStatusEnum;
 use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Traits\LogsActivity;
 
 /**
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \Spatie\Activitylog\Models\Activity> $activities
+ * @property-read Collection<int, Activity> $activities
  * @property-read int|null $activities_count
- * @method static \Illuminate\Database\Eloquent\Builder<static>|UserSecurityEvent newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|UserSecurityEvent newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|UserSecurityEvent query()
- * @mixin \Eloquent
+ *
+ * @method static Builder<static>|UserSecurityEvent newModelQuery()
+ * @method static Builder<static>|UserSecurityEvent newQuery()
+ * @method static Builder<static>|UserSecurityEvent query()
+ *
+ * @mixin Eloquent
  */
 #[Fillable([
-    'user_id',
+    'user_email',
     'event_type',
     'ip_address',
     'reason',
@@ -35,7 +43,7 @@ class UserSecurityEvent extends Model
         return [
             'event_at' => 'datetime',
             'expires_at' => 'datetime',
-            'lockout_count_at_time' => 'datetime',
+            'lockout_count_at_time' => 'integer',
             'metadata' => 'array',
         ];
     }
@@ -52,8 +60,8 @@ class UserSecurityEvent extends Model
         ?User $triggeredBy = null
     ): self {
         return self::create([
-            'user_id' => $user->id,
-            'event_type' => 'temporary_block',
+            'user_email' => $user->email,
+            'event_type' => SecurityStatusEnum::TEMPORARILY_BLOCKED->value,
             'ip_address' => $ipAddress,
             'reason' => $reason,
             'event_at' => now(),
@@ -78,8 +86,8 @@ class UserSecurityEvent extends Model
         int $lockoutCount = 0
     ): self {
         return self::create([
-            'user_id' => $user->id,
-            'event_type' => 'permanent_block',
+            'user_email' => $user->email,
+            'event_type' => SecurityStatusEnum::PERMANENTLY_BLOCKED->value,
             'ip_address' => $ipAddress,
             'reason' => $reason,
             'event_at' => now(),
@@ -100,8 +108,8 @@ class UserSecurityEvent extends Model
         string $reason = 'Bloqueo temporal expirado'
     ): self {
         return self::create([
-            'user_id' => $user->id,
-            'event_type' => 'auto_unblock',
+            'user_email' => $user->email,
+            'event_type' => SecurityEventTypeEnum::AUTO_UNBLOCK->value,
             'ip_address' => request()->ip(),
             'reason' => $reason,
             'event_at' => now(),
@@ -116,16 +124,11 @@ class UserSecurityEvent extends Model
     /**
      * Obtener el bloqueo activo de un usuario (por email e IP)
      */
-    public static function getActiveBlock(string $email, string $ip): ?self
+    public static function getActiveBlock(string $email, string $ip): Eloquent
     {
-        $user = User::where('email', $email)->first();
-        if (! $user) {
-            return null;
-        }
-
-        return self::where('user_id', $user->id)
+        return self::where('user_email', $email)
             ->where('ip_address', $ip)
-            ->whereIn('event_type', ['temporary_block', 'permanent_block'])
+            ->whereIn('event_type', [SecurityStatusEnum::TEMPORARILY_BLOCKED->value, SecurityStatusEnum::PERMANENTLY_BLOCKED->value])
             ->where(function ($query) {
                 $query->whereNull('expires_at') // Bloqueo permanente
                     ->orWhere('expires_at', '>', now()); // Bloqueo temporal no expirado
@@ -141,13 +144,32 @@ class UserSecurityEvent extends Model
      */
     public function unblock(?User $admin = null, string $reason = 'Desbloqueo'): void
     {
-        // Registrar evento de desbloqueo
-        self::logUnblock(
-            $this->user,
-            request()->ip() ?? 'unknown',
-            $reason,
-            $admin
-        );
+        self::create([
+            'user_email' => $this->user_email,
+            'event_type' => SecurityEventTypeEnum::AUTO_UNBLOCK->value,
+            'ip_address' => request()->ip() ?? 'unknown',
+            'reason' => $reason,
+            'event_at' => now(),
+            'expires_at' => null,
+            'lockout_count_at_time' => 0,
+            'metadata' => [
+                'triggered_by_type' => $admin ? 'admin' : 'system',
+            ],
+        ]);
+    }
+
+    /**
+     * Verificar si está bloqueado PERMANENTEMENTE (NO temporal)
+     *
+     * Se verifica por cuenta (user_id), no por IP, para que el bloqueo
+     * permanente aplique independientemente de desde qué IP intente el atacante.
+     */
+    public function isPermanentlyBlocked(string $email): bool
+    {
+        return self::where('user_email', $email)
+            ->where('event_type', SecurityStatusEnum::PERMANENTLY_BLOCKED->value)
+            ->whereNull('expires_at')
+            ->exists();
     }
 
     /**
@@ -157,7 +179,7 @@ class UserSecurityEvent extends Model
     {
         return LogOptions::defaults()
             ->logOnly([
-                'user_id',
+                'user_email',
                 'event_type',
                 'ip_address',
                 'reason',

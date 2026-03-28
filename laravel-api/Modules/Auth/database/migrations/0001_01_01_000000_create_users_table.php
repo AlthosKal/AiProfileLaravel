@@ -42,6 +42,7 @@ return new class extends Migration
             $table->index('identification_type');
             $table->index('last_login_at');
             $table->index('created_at');
+            $table->index('email');
             // Índice compuesto para búsquedas únicas por documento
             $table->index(['identification_type', 'identification_number'], 'users_id_type_number_idx');
         });

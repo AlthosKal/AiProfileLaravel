@@ -2,22 +2,25 @@
 
 namespace Modules\Auth\Models;
 
+use Eloquent;
 use Illuminate\Database\Eloquent\Attributes\Guarded;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Attributes\WithoutIncrementing;
 use Illuminate\Database\Eloquent\Attributes\WithoutTimestamps;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Modules\Auth\Builders\UserSecurityStateBuilder;
 
 // La vista es solo de lectura
 /**
- * @method static \Illuminate\Database\Eloquent\Builder<static>|UserSecurityState newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|UserSecurityState newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|UserSecurityState query()
- * @mixin \Eloquent
+ * @method static Builder<static>|UserSecurityState newModelQuery()
+ * @method static Builder<static>|UserSecurityState newQuery()
+ * @method static Builder<static>|UserSecurityState query()
+ *
+ * @mixin Eloquent
  */
 #[Guarded(['*'])]
-// El primary key no es auto-incremental (es UUID)
+// El primary key no es auto-incremental
 #[WithoutIncrementing]
 // Como es una vista no cuenta con timestamps
 #[WithoutTimestamps]
@@ -27,7 +30,7 @@ use Modules\Auth\Builders\UserSecurityStateBuilder;
 class UserSecurityState extends Model
 {
     // Como Llave Primaria el Id del usuario
-    protected $primaryKey = 'user_id';
+    protected $primaryKey = 'user_email';
 
     // Tipo de Primary Key
     public $keyType = 'string';

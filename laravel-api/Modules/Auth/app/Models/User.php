@@ -2,30 +2,40 @@
 
 namespace Modules\Auth\Models;
 
+use Eloquent;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\DatabaseNotification;
+use Illuminate\Notifications\DatabaseNotificationCollection;
 use Illuminate\Notifications\Notifiable;
+use Modules\Auth\Database\Factories\UserFactory;
 use Modules\Auth\Enums\SecurityStatusEnum;
 use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Traits\LogsActivity;
 
 // Indica que campos se pueden asignar masivamente, su alternativa el $guarden con el cual se indican cúales son los campos que no se pueden asígnar masivamente
 /**
  * @property SecurityStatusEnum $security_status
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \Spatie\Activitylog\Models\Activity> $activities
+ * @property-read Collection<int, Activity> $activities
  * @property-read int|null $activities_count
- * @property-read \Illuminate\Notifications\DatabaseNotificationCollection<int, \Illuminate\Notifications\DatabaseNotification> $notifications
+ * @property-read DatabaseNotificationCollection<int, DatabaseNotification> $notifications
  * @property-read int|null $notifications_count
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \Modules\Auth\Models\PasswordHistory> $passwordHistories
+ * @property-read Collection<int, PasswordHistory> $passwordHistories
  * @property-read int|null $password_histories_count
- * @method static \Illuminate\Database\Eloquent\Builder<static>|User newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|User newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|User query()
- * @mixin \Eloquent
+ *
+ * @method static Builder<static>|User newModelQuery()
+ * @method static Builder<static>|User newQuery()
+ * @method static Builder<static>|User query()
+ *
+ * @mixin Eloquent
  */
 #[Fillable([
     'name',
@@ -54,10 +64,16 @@ use Spatie\Activitylog\Traits\LogsActivity;
 ])]
 class User extends Authenticatable implements MustVerifyEmail
 {
-    use HasUuids, LogsActivity, Notifiable;
+    /** @use HasFactory<UserFactory> */
+    use HasFactory, HasUuids, LogsActivity, Notifiable;
+
+    protected static function newFactory(): UserFactory
+    {
+        return UserFactory::new();
+    }
 
     // Los $appends agrega atributos calculados al JSON
-    // Están también los accessors y mutators (getters y setters), los cuales cumplen el propósito de leer y guardar valores pero tambien de al momento de leerlos o guardarlos, transformarlos.
+    // Están también los accessors y mutators (getters y setters), los cuales cumplen el propósito de leer y guardar valores pero también de al momento de leerlos o guardarlos, transformarlos.
     // Attribute es la versión unificada de los accessors y mutators
     /**
      * Transforma atributos automaticamente
@@ -118,7 +134,7 @@ class User extends Authenticatable implements MustVerifyEmail
         $expirationDate = $this->password_changed_at->addDays($expirationDays);
 
         // Cast explícito a int para evitar warning de conversión implícita
-        return (int) max(0, now()->diffInDays($expirationDate, false));
+        return (int) max(0, now()->diffInDays($expirationDate));
     }
 
     // ============================================
@@ -126,32 +142,19 @@ class User extends Authenticatable implements MustVerifyEmail
     // ============================================
 
     /**
-     * Verificar si puede acceder al sistema
-     * (debe estar activo manualmente Y no bloqueado)
+     * Verificar si está bloqueado (temporal o permanente)
      */
-    public function canAccessSystem(): bool
+    public function isBlocked(): bool
     {
-        return $this->is_active && ! $this->isBlocked();
+        return $this->security_status->isBlocked();
     }
 
     /**
-     * Verificar si está bloqueado temporalmente
+     * Verificar si está bloqueado permanentemente
      */
-    public function isTemporarilyBlocked(): bool
+    public function isPermanentlyBlocked(): bool
     {
-        return $this->security_status->isTemporarilyBlocked()
-            && $this->blocked_until
-            && $this->blocked_until->isFuture();
-    }
-
-    /**
-     * Verificar si el bloqueo temporal ya expiró
-     */
-    public function hasExpiredBlock(): bool
-    {
-        return $this->security_status->isTemporarilyBlocked()
-            && $this->blocked_until
-            && $this->blocked_until->isPast();
+        return $this->security_status->isPermanentlyBlocked();
     }
 
     /**
@@ -173,7 +176,7 @@ class User extends Authenticatable implements MustVerifyEmail
             ])
             ->logOnlyDirty() // Solo cambios reales
             ->dontSubmitEmptyLogs() // No crear logs vacíos
-            ->setDescriptionForEvent(fn (string $eventName) => "Usuario {$eventName}")
+            ->setDescriptionForEvent(fn (string $eventName) => "Usuario $eventName")
             ->useLogName('user') // Nombre del log para filtrar
             // Agregar información contextual
             ->dontLogIfAttributesChangedOnly(['remember_token', 'updated_at']);

@@ -16,11 +16,15 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // LATERAL JOIN es exclusivo de PostgreSQL — la vista no se crea en SQLite (tests)
+        if (DB::getDriverName() !== 'pgsql') {
+            return;
+        }
+
         DB::statement("
             CREATE VIEW user_security_state AS
             SELECT
-                u.id as user_id,
-                u.email,
+                u.email AS user_email,
                 u.name,
                 u.security_status,
                 -- Detalles del último evento de bloqueo
@@ -39,26 +43,26 @@ return new class extends Migration
                     expires_at,
                     ip_address
                 FROM user_security_events
-                WHERE user_id = u.id
-                  AND event_type IN ('temporary_block', 'permanent_block')
+                WHERE user_email = u.email
+                  AND event_type IN ('temporarily_blocked', 'permanently_blocked')
                 ORDER BY event_at DESC
                 LIMIT 1
             ) latest_block ON true
             -- Contar total de bloqueos (usa índice parcial)
             LEFT JOIN (
                 SELECT
-                    user_id,
+                    user_email,
                     COUNT(*) as lockout_count
                 FROM user_security_events
-                WHERE event_type IN ('temporary_block', 'permanent_block')
-                GROUP BY user_id
-            ) block_counts ON block_counts.user_id = u.id;
+                WHERE event_type IN ('temporarily_blocked', 'permanently_blocked')
+                GROUP BY user_email
+            ) block_counts ON block_counts.user_email = u.email;
         ");
 
         // NOTA: Las vistas en PostgreSQL NO pueden tener índices.
         // Esta vista usa automáticamente los índices de las tablas base:
-        // - users(id, security_status, is_active)
-        // - user_security_events(user_id, event_type, event_at DESC)
+        // - users(email, security_status, is_active)
+        // - user_security_events(user_email, event_type, event_at DESC)
     }
 
     /**

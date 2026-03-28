@@ -6,13 +6,15 @@ use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class CircuitBreakerHalfOpen
+class CircuitBreakerOpenedEvent
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
     public function __construct(
         public readonly string $serviceName,
-        public readonly int $successThreshold,
+        public readonly int $failureCount,
+        public readonly int $failureThreshold,
+        public readonly int $recoveryTimeout,
     ) {}
 
     /**
@@ -22,7 +24,9 @@ class CircuitBreakerHalfOpen
     {
         return [
             'service_name' => $this->serviceName,
-            'success_threshold' => $this->successThreshold,
+            'failure_count' => $this->failureCount,
+            'failure_threshold' => $this->failureThreshold,
+            'recovery_timeout' => $this->recoveryTimeout,
             'timestamp' => now()->toIso8601String(),
         ];
     }

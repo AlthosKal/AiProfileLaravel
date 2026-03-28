@@ -4,9 +4,9 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Event;
 use Modules\Shared\Actions\CircuitBreakerAction;
 use Modules\Shared\Enums\CircuitBreakerStatus;
-use Modules\Shared\Events\CircuitBreakerClosed;
-use Modules\Shared\Events\CircuitBreakerHalfOpen;
-use Modules\Shared\Events\CircuitBreakerOpened;
+use Modules\Shared\Events\CircuitBreakerClosedEvent;
+use Modules\Shared\Events\CircuitBreakerHalfOpenEvent;
+use Modules\Shared\Events\CircuitBreakerOpenedEvent;
 use Modules\Shared\Exceptions\CircuitBreakerOpenException;
 use Modules\Shared\Stores\CircuitBreakerStore;
 
@@ -70,7 +70,7 @@ describe('estado CLOSED', function () {
         }
 
         expect(store()->getState())->toBe(CircuitBreakerStatus::STATE_OPEN);
-        Event::assertDispatched(CircuitBreakerOpened::class, fn ($e) => $e->serviceName === SERVICE);
+        Event::assertDispatched(CircuitBreakerOpenedEvent::class, fn ($e) => $e->serviceName === SERVICE);
     });
 
     it('resetea el contador de fallos tras un éxito', function () {
@@ -112,7 +112,7 @@ describe('estado OPEN', function () {
 
         makeAction()->call(fn () => 'ok', fn () => 'fb');
 
-        Event::assertDispatched(CircuitBreakerHalfOpen::class, fn ($e) => $e->serviceName === SERVICE);
+        Event::assertDispatched(CircuitBreakerHalfOpenEvent::class, fn ($e) => $e->serviceName === SERVICE);
     });
 });
 
@@ -130,7 +130,7 @@ describe('estado HALF_OPEN', function () {
         }
 
         expect(store()->getState())->toBe(CircuitBreakerStatus::STATE_CLOSED);
-        Event::assertDispatched(CircuitBreakerClosed::class, fn ($e) => $e->serviceName === SERVICE);
+        Event::assertDispatched(CircuitBreakerClosedEvent::class, fn ($e) => $e->serviceName === SERVICE);
     });
 
     it('reabre el circuit si alcanza el threshold de fallos en HALF_OPEN', function () {

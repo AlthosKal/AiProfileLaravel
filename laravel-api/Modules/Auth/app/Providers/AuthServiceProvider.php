@@ -3,6 +3,8 @@
 namespace Modules\Auth\Providers;
 
 use Illuminate\Console\Scheduling\Schedule;
+use Modules\Auth\Interfaces\LockoutStateStoreInterface;
+use Modules\Auth\Stores\LockoutStateStore;
 use Nwidart\Modules\Support\ModuleServiceProvider;
 
 class AuthServiceProvider extends ModuleServiceProvider
@@ -33,6 +35,13 @@ class AuthServiceProvider extends ModuleServiceProvider
         EventServiceProvider::class,
         RouteServiceProvider::class,
     ];
+
+    public function register(): void
+    {
+        parent::register();
+
+        $this->app->bind(LockoutStateStoreInterface::class, LockoutStateStore::class);
+    }
 
     /**
      * Define module schedules.
