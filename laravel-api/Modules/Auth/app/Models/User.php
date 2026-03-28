@@ -15,6 +15,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Notifications\DatabaseNotificationCollection;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Carbon;
 use Modules\Auth\Database\Factories\UserFactory;
 use Modules\Auth\Enums\SecurityStatusEnum;
 use Spatie\Activitylog\LogOptions;
@@ -23,7 +24,10 @@ use Spatie\Activitylog\Traits\LogsActivity;
 
 // Indica que campos se pueden asignar masivamente, su alternativa el $guarden con el cual se indican cúales son los campos que no se pueden asígnar masivamente
 /**
+ * @property string $email
  * @property SecurityStatusEnum $security_status
+ * @property Carbon|null $password_changed_at
+ * @property Carbon|null $blocked_until
  * @property-read Collection<int, Activity> $activities
  * @property-read int|null $activities_count
  * @property-read DatabaseNotificationCollection<int, DatabaseNotification> $notifications

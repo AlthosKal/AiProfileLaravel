@@ -15,6 +15,7 @@ use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Traits\LogsActivity;
 
 /**
+ * @property string $user_email
  * @property-read Collection<int, Activity> $activities
  * @property-read int|null $activities_count
  *

@@ -49,8 +49,8 @@ readonly class LockoutStateAction
         Log::info("Conteo de lockout incrementado para $email con ip $ip. El conteo fue aumentado a $count.");
 
         return match ($count) {
-            1 => $this->handleFirstLockout($email, $ip, $count),
-            2 => $this->handleSecondLockout($email, $ip, $count),
+            1 => $this->handleFirstLockout($email, $count),
+            2 => $this->handleSecondLockout($email, $count),
             default => $this->handleThirdLockout($email, $count, $ip),
         };
     }
@@ -62,7 +62,7 @@ readonly class LockoutStateAction
      * un desafío humano en todos los intentos siguientes, aumentando el costo
      * del ataque sin impactar negativamente a usuarios legítimos que se equivocaron.
      */
-    private function handleFirstLockout(string $email, string $ip, int $count): LockoutStateData
+    private function handleFirstLockout(string $email, int $count): LockoutStateData
     {
         $duration = 60;
 
@@ -70,7 +70,7 @@ readonly class LockoutStateAction
         $this->store->enableCaptcha($email);
         $this->saveExpiryTimestamp($email, $duration);
 
-        Log::warning("Primer lockout disparado para $email con ip $ip. Bloqueo por 1 minuto con conteo $count y reCAPTCHA activado.", [
+        Log::warning("Primer lockout disparado para $email. Bloqueo por 1 minuto con conteo $count y reCAPTCHA activado.", [
             'expires_at' => now()->addSeconds($duration)->toIso8601String(),
         ]);
 
@@ -91,13 +91,13 @@ readonly class LockoutStateAction
      * primer lockout, por lo que no se reactiva aquí. El frontend usa `captcha_enabled: true`
      * para saber que debe seguir mostrando el widget.
      */
-    private function handleSecondLockout(string $email, string $ip, int $count): LockoutStateData
+    private function handleSecondLockout(string $email, int $count): LockoutStateData
     {
         $duration = 3600;
 
         $this->saveExpiryTimestamp($email, $duration);
 
-        Log::warning("Segundo lockout disparado para $email con ip $ip. Bloqueo por 1 hora con conteo $count.", [
+        Log::warning("Segundo lockout disparado para $email. Bloqueo por 1 hora con conteo $count.", [
             'expires_at' => now()->addSeconds($duration)->toIso8601String(),
         ]);
 

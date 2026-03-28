@@ -89,6 +89,8 @@ class UserSecurityStateBuilder extends Builder
      *
      * Query única que obtiene todos los contadores en una sola consulta.
      * Útil para dashboards administrativos.
+     *
+     * @return array{total_users: int, normal_users: int, temp_blocked_users: int, perm_blocked_users: int, manually_deactivated_users: int, avg_lockout_count: float}
      */
     public function getSecurityStats(): array
     {

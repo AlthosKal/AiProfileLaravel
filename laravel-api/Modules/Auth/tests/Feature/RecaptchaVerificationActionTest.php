@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Translation\PotentiallyTranslatedString;
 use Modules\Auth\Actions\RecaptchaVerificationAction;
 use Modules\Auth\Exceptions\RecaptchaVerificationException;
 use Modules\Auth\Rules\RecaptchaV3Rule;
@@ -151,8 +152,10 @@ describe('RecaptchaV3Rule', function () {
         $rule = new RecaptchaV3Rule('login');
         $failed = false;
 
-        $rule->validate('recaptcha_token', '', function () use (&$failed) {
+        $rule->validate('recaptcha_token', '', function (string $message, ?string $translation = null) use (&$failed): PotentiallyTranslatedString {
             $failed = true;
+
+            return new PotentiallyTranslatedString($message, app('translator'));
         });
 
         expect($failed)->toBeTrue();
@@ -165,8 +168,10 @@ describe('RecaptchaV3Rule', function () {
         $rule = new RecaptchaV3Rule('login');
         $failed = false;
 
-        $rule->validate('recaptcha_token', null, function () use (&$failed) {
+        $rule->validate('recaptcha_token', null, function (string $message, ?string $translation = null) use (&$failed): PotentiallyTranslatedString {
             $failed = true;
+
+            return new PotentiallyTranslatedString($message, app('translator'));
         });
 
         expect($failed)->toBeTrue();
@@ -185,8 +190,10 @@ describe('RecaptchaV3Rule', function () {
         $rule = new RecaptchaV3Rule('login');
         $failed = false;
 
-        $rule->validate('recaptcha_token', RECAPTCHA_TOKEN, function () use (&$failed) {
+        $rule->validate('recaptcha_token', RECAPTCHA_TOKEN, function (string $message, ?string $translation = null) use (&$failed): PotentiallyTranslatedString {
             $failed = true;
+
+            return new PotentiallyTranslatedString($message, app('translator'));
         });
 
         expect($failed)->toBeTrue();
@@ -204,8 +211,10 @@ describe('RecaptchaV3Rule', function () {
         $rule = new RecaptchaV3Rule('login');
         $failed = false;
 
-        $rule->validate('recaptcha_token', RECAPTCHA_TOKEN, function () use (&$failed) {
+        $rule->validate('recaptcha_token', RECAPTCHA_TOKEN, function (string $message, ?string $translation = null) use (&$failed): PotentiallyTranslatedString {
             $failed = true;
+
+            return new PotentiallyTranslatedString($message, app('translator'));
         });
 
         expect($failed)->toBeFalse();
@@ -217,8 +226,10 @@ describe('RecaptchaV3Rule', function () {
         $rule = new RecaptchaV3Rule('login');
         $failed = false;
 
-        $rule->validate('recaptcha_token', RECAPTCHA_TOKEN, function () use (&$failed) {
+        $rule->validate('recaptcha_token', RECAPTCHA_TOKEN, function (string $message, ?string $translation = null) use (&$failed): PotentiallyTranslatedString {
             $failed = true;
+
+            return new PotentiallyTranslatedString($message, app('translator'));
         });
 
         expect($failed)->toBeFalse();

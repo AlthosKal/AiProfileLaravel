@@ -24,6 +24,8 @@ class RecaptchaVerificationAction
 
     /**
      * Verificar token de reCAPTCHA con Circuit Breaker y Fallback.
+     *
+     * @return array{success: bool, score: float, action: string, fallback_used: bool}
      */
     public function verify(string $token, string $action): array
     {
@@ -35,6 +37,8 @@ class RecaptchaVerificationAction
 
     /**
      * Verificación real con Google reCAPTCHA API.
+     *
+     * @return array{success: bool, score: float, action: string, fallback_used: bool}
      *
      * @throws ConnectionException
      * @throws RequestException
@@ -85,6 +89,8 @@ class RecaptchaVerificationAction
      * Estrategia de degradación elegante (graceful degradation) que permite
      * que el sistema siga funcionando mientras reCAPTCHA está caído,
      * registrando todo para auditoría.
+     *
+     * @return array{success: bool, score: float, action: string, fallback_used: bool}
      */
     private function fallbackVerification(string $action): array
     {

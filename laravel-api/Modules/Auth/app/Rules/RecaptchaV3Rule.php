@@ -4,6 +4,7 @@ namespace Modules\Auth\Rules;
 
 use Closure;
 use Illuminate\Contracts\Validation\ValidationRule;
+use Illuminate\Translation\PotentiallyTranslatedString;
 use Modules\Auth\Actions\RecaptchaVerificationAction;
 use Modules\Auth\Enums\AuthErrorCode;
 
@@ -13,6 +14,9 @@ readonly class RecaptchaV3Rule implements ValidationRule
         private string $action,
     ) {}
 
+    /**
+     * @param  Closure(string, string|null=): PotentiallyTranslatedString  $fail
+     */
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
         if (empty($value) || ! is_string($value)) {

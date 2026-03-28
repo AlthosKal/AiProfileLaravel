@@ -176,7 +176,7 @@ readonly class LoginAction
      * Verificar si reCAPTCHA es obligatorio y si el token fue provisto.
      *
      * reCAPTCHA se activa tras el primer lockout y permanece activo 24 horas.
-     * Si está activo pero no se envió token, se rechaza con un error en el campo
+     * Si está activo, pero no se envió token, se rechaza con un error en el campo
      * `recaptcha_token` para que el frontend pueda mostrar el widget.
      *
      * La validación del score del token la realiza RecaptchaV3Rule en el DTO

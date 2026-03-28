@@ -2,8 +2,6 @@
 
 namespace Modules\Shared\Stores;
 
-use Illuminate\Config\Repository;
-use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Modules\Shared\Enums\CircuitBreakerStatus;
@@ -15,19 +13,10 @@ use Throwable;
 
 readonly class CircuitBreakerStore implements CircuitBreakerStoreInterface
 {
-    /**
-     * @var int|Repository|Application|mixed|object|null
-     */
     private int $failureThreshold;
 
-    /**
-     * @var int|Repository|Application|mixed|object|null
-     */
     private int $recoveryTimeout;
 
-    /**
-     * @var int|Repository|Application|mixed|object|null
-     */
     private int $successThreshold;
 
     public function __construct(private string $serviceName)

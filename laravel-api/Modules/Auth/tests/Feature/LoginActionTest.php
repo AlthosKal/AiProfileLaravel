@@ -52,21 +52,24 @@ function exhaustLoginAttempts(LoginAction $action, int $times, string $email = '
     }
 }
 
-beforeEach(function () {
+/** @var LoginAction $action */
+$action = makeLoginAction();
+
+beforeEach(function () use (&$action) {
     Cache::flush();
     RateLimiter::clear('user@example.com|127.0.0.1');
-    $this->action = makeLoginAction();
+    $action = makeLoginAction();
 });
 
 // ─────────────────────────────────────────────────────────────
 // Login exitoso
 // ─────────────────────────────────────────────────────────────
 
-describe('login exitoso', function () {
-    it('autentica al usuario con credenciales correctas', function () {
+describe('login exitoso', function () use (&$action) {
+    it('autentica al usuario con credenciales correctas', function () use (&$action) {
         User::factory()->create(['email' => 'user@example.com', 'password' => bcrypt('password')]);
 
-        $this->action->login(makeLoginData(), '127.0.0.1');
+        $action->login(makeLoginData(), '127.0.0.1');
 
         expect(auth()->check())->toBeTrue();
     });
@@ -83,16 +86,16 @@ describe('login exitoso', function () {
         expect($store->isCaptchaRequired('user@example.com'))->toBeFalse();
     });
 
-    it('limpia el Rate Limiter al autenticarse correctamente', function () {
+    it('limpia el Rate Limiter al autenticarse correctamente', function () use (&$action) {
         User::factory()->create(['email' => 'user@example.com', 'password' => bcrypt('password')]);
 
         // Generar algunos intentos fallidos previos para que el Rate Limiter tenga estado
         try {
-            $this->action->login(makeLoginData(password: 'wrong'), '127.0.0.1');
+            $action->login(makeLoginData(password: 'wrong'), '127.0.0.1');
         } catch (ValidationException) {
         }
 
-        $this->action->login(makeLoginData(), '127.0.0.1');
+        $action->login(makeLoginData(), '127.0.0.1');
 
         $key = Str::transliterate(Str::lower('user@example.com').'|127.0.0.1');
         expect(RateLimiter::attempts($key))->toBe(0);
@@ -103,19 +106,19 @@ describe('login exitoso', function () {
 // Credenciales incorrectas
 // ─────────────────────────────────────────────────────────────
 
-describe('credenciales incorrectas', function () {
-    it('lanza ValidationException con el código LoginFailed', function () {
+describe('credenciales incorrectas', function () use (&$action) {
+    it('lanza ValidationException con el código LoginFailed', function () use (&$action) {
         User::factory()->create(['email' => 'user@example.com', 'password' => bcrypt('password')]);
 
-        expect(fn () => $this->action->login(makeLoginData(password: 'wrongpassword'), '127.0.0.1'))
+        expect(fn () => $action->login(makeLoginData(password: 'wrongpassword'), '127.0.0.1'))
             ->toThrow(ValidationException::class);
     });
 
-    it('el error de credenciales incorrectas va en el campo email', function () {
+    it('el error de credenciales incorrectas va en el campo email', function () use (&$action) {
         User::factory()->create(['email' => 'user@example.com', 'password' => bcrypt('password')]);
 
         try {
-            $this->action->login(makeLoginData(password: 'wrong'), '127.0.0.1');
+            $action->login(makeLoginData(password: 'wrong'), '127.0.0.1');
         } catch (ValidationException $e) {
             expect($e->errors())->toHaveKey('email')
                 ->and($e->errors()['email'][0])->toBe(AuthErrorCode::LoginFailed->value);
@@ -127,30 +130,30 @@ describe('credenciales incorrectas', function () {
 // Throttle y Lockout
 // ─────────────────────────────────────────────────────────────
 
-describe('throttle - lockout', function () {
-    it('lanza LoginThrottledException al agotar los intentos disponibles', function () {
+describe('throttle - lockout', function () use (&$action) {
+    it('lanza LoginThrottledException al agotar los intentos disponibles', function () use (&$action) {
         Event::fake([Lockout::class]);
         User::factory()->create(['email' => 'user@example.com', 'password' => bcrypt('password')]);
 
         $maxAttempts = (int) config('auth.login.ip.max_attempts', 3);
 
         // Agotar todos los intentos: el último provoca el lockout
-        exhaustLoginAttempts($this->action, $maxAttempts);
+        exhaustLoginAttempts($action, $maxAttempts);
 
         // El siguiente intento debe disparar LoginThrottledException
-        expect(fn () => $this->action->login(makeLoginData(password: 'wrong', recaptcha: 'token'), '127.0.0.1'))
+        expect(fn () => $action->login(makeLoginData(password: 'wrong', recaptcha: 'token'), '127.0.0.1'))
             ->toThrow(LoginThrottledException::class);
     });
 
-    it('la LoginThrottledException incluye retry_after y captcha_required', function () {
+    it('la LoginThrottledException incluye retry_after y captcha_required', function () use (&$action) {
         Event::fake([Lockout::class]);
         User::factory()->create(['email' => 'user@example.com', 'password' => bcrypt('password')]);
 
         $maxAttempts = (int) config('auth.login.ip.max_attempts', 3);
-        exhaustLoginAttempts($this->action, $maxAttempts);
+        exhaustLoginAttempts($action, $maxAttempts);
 
         try {
-            $this->action->login(makeLoginData(password: 'wrong', recaptcha: 'token'), '127.0.0.1');
+            $action->login(makeLoginData(password: 'wrong', recaptcha: 'token'), '127.0.0.1');
         } catch (LoginThrottledException $e) {
             $data = $e->render()->getData(assoc: true);
 
@@ -160,12 +163,12 @@ describe('throttle - lockout', function () {
         }
     });
 
-    it('dispara el evento Lockout de Laravel al alcanzar el límite', function () {
+    it('dispara el evento Lockout de Laravel al alcanzar el límite', function () use (&$action) {
         Event::fake([Lockout::class]);
         User::factory()->create(['email' => 'user@example.com', 'password' => bcrypt('password')]);
 
         $maxAttempts = (int) config('auth.login.ip.max_attempts', 3);
-        exhaustLoginAttempts($this->action, $maxAttempts + 1);
+        exhaustLoginAttempts($action, $maxAttempts + 1);
 
         Event::assertDispatched(Lockout::class);
     });
@@ -175,8 +178,8 @@ describe('throttle - lockout', function () {
 // Bloqueos de cuenta (DB)
 // ─────────────────────────────────────────────────────────────
 
-describe('usuario bloqueado temporalmente', function () {
-    it('no bloquea el login si security_status es TEMPORARILY_BLOCKED pero blocked_until ya expiró', function () {
+describe('usuario bloqueado temporalmente', function () use (&$action) {
+    it('no bloquea el login si security_status es TEMPORARILY_BLOCKED pero blocked_until ya expiró', function () use (&$action) {
         // isTemporarilyBlocked() requiere security_status + blocked_until futuro.
         // blocked_until proviene de la vista user_current_security_state, no de users,
         // así que al leer el User directamente blocked_until es null → no se bloquea.
@@ -188,34 +191,35 @@ describe('usuario bloqueado temporalmente', function () {
         ]);
 
         // Con blocked_until null, isTemporarilyBlocked() devuelve false → login procede
-        $this->action->login(makeLoginData(), '127.0.0.1');
+        $action->login(makeLoginData(), '127.0.0.1');
 
         expect(auth()->check())->toBeTrue();
     });
 });
 
-describe('usuario bloqueado permanentemente', function () {
-    it('lanza ValidationException con ThirdLockoutFired para cuentas bloqueadas permanentemente', function () {
-        User::factory()->create([
-            'email' => 'user@example.com',
-            'security_status' => SecurityStatusEnum::PERMANENTLY_BLOCKED,
-        ]);
-
-        expect(fn () => $this->action->login(makeLoginData(), '127.0.0.1'))
-            ->toThrow(fn (ValidationException $e) => str_contains(
-                json_encode($e->errors()),
-                AuthErrorCode::ThirdLockoutFired->value
-            ));
-    });
-
-    it('no consume intentos del Rate Limiter si la cuenta está bloqueada permanentemente', function () {
+describe('usuario bloqueado permanentemente', function () use (&$action) {
+    it('lanza ValidationException con ThirdLockoutFired para cuentas bloqueadas permanentemente', function () use (&$action) {
         User::factory()->create([
             'email' => 'user@example.com',
             'security_status' => SecurityStatusEnum::PERMANENTLY_BLOCKED,
         ]);
 
         try {
-            $this->action->login(makeLoginData(), '127.0.0.1');
+            $action->login(makeLoginData(), '127.0.0.1');
+            $this->fail('Se esperaba una ValidationException');
+        } catch (ValidationException $e) {
+            expect(json_encode($e->errors()))->toContain(AuthErrorCode::ThirdLockoutFired->value);
+        }
+    });
+
+    it('no consume intentos del Rate Limiter si la cuenta está bloqueada permanentemente', function () use (&$action) {
+        User::factory()->create([
+            'email' => 'user@example.com',
+            'security_status' => SecurityStatusEnum::PERMANENTLY_BLOCKED,
+        ]);
+
+        try {
+            $action->login(makeLoginData(), '127.0.0.1');
         } catch (ValidationException) {
         }
 
@@ -228,16 +232,16 @@ describe('usuario bloqueado permanentemente', function () {
 // reCAPTCHA requerido
 // ─────────────────────────────────────────────────────────────
 
-describe('captcha requerido', function () {
+describe('captcha requerido', function () use (&$action) {
     it('lanza ValidationException con CaptchaVerificationRequired si falta el token', function () {
         User::factory()->create(['email' => 'user@example.com']);
 
         $store = new LockoutStateStore;
         $store->enableCaptcha('user@example.com');
-        $action = makeLoginAction($store);
+        $localAction = makeLoginAction($store);
 
         try {
-            $action->login(makeLoginData(recaptcha: null), '127.0.0.1');
+            $localAction->login(makeLoginData(recaptcha: null), '127.0.0.1');
             $this->fail('Se esperaba una ValidationException');
         } catch (ValidationException $e) {
             expect($e->errors())->toHaveKey('recaptcha_token')
@@ -250,11 +254,11 @@ describe('captcha requerido', function () {
 
         $store = new LockoutStateStore;
         $store->enableCaptcha('user@example.com');
-        $action = makeLoginAction($store);
+        $localAction = makeLoginAction($store);
 
         $threw = null;
         try {
-            $action->login(makeLoginData(recaptcha: 'some-token'), '127.0.0.1');
+            $localAction->login(makeLoginData(recaptcha: 'some-token'), '127.0.0.1');
         } catch (ValidationException $e) {
             $threw = $e;
         }
@@ -263,13 +267,13 @@ describe('captcha requerido', function () {
             ->not->toContain(AuthErrorCode::CaptchaVerificationRequired->value);
     });
 
-    it('no exige captcha si no está activado en cache', function () {
+    it('no exige captcha si no está activado en cache', function () use (&$action) {
         User::factory()->create(['email' => 'user@example.com', 'password' => bcrypt('password')]);
 
         // Sin activar captcha en store, login sin token debe proceder sin error de captcha
         $threw = null;
         try {
-            $this->action->login(makeLoginData(recaptcha: null), '127.0.0.1');
+            $action->login(makeLoginData(recaptcha: null), '127.0.0.1');
         } catch (ValidationException $e) {
             $threw = $e;
         }

@@ -9,10 +9,15 @@ use Illuminate\Database\Eloquent\Attributes\WithoutIncrementing;
 use Illuminate\Database\Eloquent\Attributes\WithoutTimestamps;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 use Modules\Auth\Builders\UserSecurityStateBuilder;
 
 // La vista es solo de lectura
 /**
+ * @property string $security_status
+ * @property Carbon|null $blocked_until
+ * @property bool $is_active
+ *
  * @method static Builder<static>|UserSecurityState newModelQuery()
  * @method static Builder<static>|UserSecurityState newQuery()
  * @method static Builder<static>|UserSecurityState query()
