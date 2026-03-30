@@ -16,6 +16,11 @@ enum AuthErrorCode: string
     case LoginFailed = 'auth_failed';
     case LoginThrottled = 'auth_throttled';
 
+    // Verificaciones post-login
+    case TwoFactorRequired = 'two_factor_required';
+    case EmailVerificationRequired = 'email_verification_required';
+    case PasswordExpiringSoon = 'password_expiring_soon';
+
     // Lockout
     case FirstLockoutFired = 'first_lockout_fired';
     case SecondLockoutFired = 'second_lockout_fired';

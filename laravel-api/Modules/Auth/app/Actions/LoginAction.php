@@ -11,6 +11,7 @@ use Illuminate\Validation\ValidationException;
 use Modules\Auth\Enums\AuthErrorCode;
 use Modules\Auth\Exceptions\LoginThrottledException;
 use Modules\Auth\Http\Data\LoginData;
+use Modules\Auth\Http\Data\LoginResponseData;
 use Modules\Auth\Interfaces\LockoutStateStoreInterface;
 use Modules\Auth\Models\User;
 use Throwable;
@@ -24,6 +25,7 @@ use Throwable;
  *   3. Verificar Rate Limiter antes de intentar autenticación
  *   4. Intentar autenticación y actualizar el Rate Limiter en caso de fallo
  *   5. Limpiar todo el estado de lockout en caso de éxito
+ *   6. Evaluar verificaciones post-login (2FA, email, contraseña)
  *
  * El Rate Limiter es por email+IP para prevenir ataques de fuerza bruta
  * desde una misma IP, mientras que el lockout es por email solamente
@@ -46,7 +48,7 @@ readonly class LoginAction
      * @throws LoginThrottledException Si se alcanzó el límite de intentos (HTTP 429)
      * @throws Throwable
      */
-    public function login(LoginData $data, string $ip): void
+    public function login(LoginData $data, string $ip): LoginResponseData
     {
         Log::debug("Intento de inicio de sesión iniciado por $data->email con número de ip $ip. ",
             ['captcha_provided' => ! empty($data->recaptcha_token),
@@ -107,6 +109,18 @@ readonly class LoginAction
             'email' => $data->email,
             'ip' => $ip,
         ]);
+
+        // 6. Construir y retornar las flags de estado post-login.
+        //    No interrumpen el flujo — el frontend decide cómo reaccionar a cada una.
+        /** @var User $user */
+        $user = Auth::user();
+
+        return new LoginResponseData(
+            twoFactorRequired: $user->hasTwoFactorEnabled(),
+            emailVerificationRequired: ! $user->hasVerifiedEmail(),
+            passwordExpiringSoon: $this->isPasswordAboutToExpire($user),
+            daysUntilPasswordExpires: $user->getDaysUntilPasswordExpires(),
+        );
     }
 
     /**
@@ -129,8 +143,9 @@ readonly class LoginAction
             return;
         }
 
-        Log::warning("Rate Limiter superado para $email con ip $ip. Escalando lockout. La cantidad de máximos intentos son $maxAttempts", [
+        Log::warning("Rate Limiter superado para $email con ip $ip. Escalando lockout.", [
             'attempts' => RateLimiter::attempts($key),
+            'max_attempts' => $maxAttempts,
         ]);
 
         // Disparar el evento nativo de Laravel para compatibilidad con listeners externos
@@ -176,7 +191,7 @@ readonly class LoginAction
      * Verificar si reCAPTCHA es obligatorio y si el token fue provisto.
      *
      * reCAPTCHA se activa tras el primer lockout y permanece activo 24 horas.
-     * Si está activo, pero no se envió token, se rechaza con un error en el campo
+     * Si está activo pero no se envió token, se rechaza con un error en el campo
      * `recaptcha_token` para que el frontend pueda mostrar el widget.
      *
      * La validación del score del token la realiza RecaptchaV3Rule en el DTO
@@ -197,6 +212,27 @@ readonly class LoginAction
                 'recaptcha_token' => AuthErrorCode::CaptchaVerificationRequired->value,
             ]);
         }
+    }
+
+    /**
+     * Verificar si la contraseña del usuario está próxima a vencer.
+     *
+     * Se considera "próxima a vencer" cuando los días restantes están dentro
+     * de la ventana de advertencia configurada en `auth.password_expiration_warning_days`.
+     * El frontend puede mostrar un aviso no bloqueante con los días exactos restantes.
+     * Si la contraseña ya venció (`hasPasswordExpired`) no aplica esta advertencia
+     * ya que ese caso se maneja con un middleware de expiración.
+     */
+    private function isPasswordAboutToExpire(User $user): bool
+    {
+        if ($user->hasPasswordExpired()) {
+            return false;
+        }
+
+        $daysLeft = $user->getDaysUntilPasswordExpires();
+        $warningDays = config('auth.password_expiration_warning_days', 5);
+
+        return $daysLeft > 0 && $daysLeft <= $warningDays;
     }
 
     /**

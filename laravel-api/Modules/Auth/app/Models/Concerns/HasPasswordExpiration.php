@@ -1,0 +1,53 @@
+<?php
+
+namespace Modules\Auth\Models\Concerns;
+
+use Illuminate\Support\Carbon;
+
+/**
+ * Funcionalidad de expiración de contraseña para el modelo User.
+ *
+ * Centraliza la lógica de vencimiento basada en `password_changed_at`
+ * y la configuración `auth.password_expiration_days`.
+ *
+ * @property Carbon|null $password_changed_at
+ */
+trait HasPasswordExpiration
+{
+    /**
+     * Verificar si la contraseña actual ya venció.
+     *
+     * Si nunca se ha cambiado la contraseña (`password_changed_at` es null),
+     * se considera que no ha expirado para no bloquear el primer acceso.
+     */
+    public function hasPasswordExpired(): bool
+    {
+        if (! $this->password_changed_at) {
+            return false;
+        }
+
+        $expirationDays = config('auth.password_expiration_days', 30);
+
+        return $this->password_changed_at->addDays($expirationDays)->isPast();
+    }
+
+    /**
+     * Obtener los días restantes hasta que venza la contraseña.
+     *
+     * Si nunca se ha cambiado la contraseña, retorna el total de días
+     * configurados como si acabara de ser establecida hoy.
+     */
+    public function getDaysUntilPasswordExpires(): int
+    {
+        $expirationDays = config('auth.password_expiration_days', 30);
+
+        if (! $this->password_changed_at) {
+            return $expirationDays;
+        }
+
+        $expirationDate = $this->password_changed_at->addDays($expirationDays);
+
+        // Cast explícito a int para evitar warning de conversión implícita
+        return (int) max(0, now()->diffInDays($expirationDate));
+    }
+}
