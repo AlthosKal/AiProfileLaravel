@@ -2,7 +2,7 @@
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
-use Modules\Auth\Actions\LockoutStateAction;
+use Modules\Auth\Actions\Auth\LockoutStateAction;
 use Modules\Auth\Enums\AuthErrorCode;
 use Modules\Auth\Enums\SecurityStatusEnum;
 use Modules\Auth\Exceptions\UserNotFoundForLockoutException;

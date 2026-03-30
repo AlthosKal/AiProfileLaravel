@@ -3,49 +3,29 @@
 namespace Modules\Auth\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Password;
-use Illuminate\Support\Str;
-use Illuminate\Validation\Rules;
-use Illuminate\Validation\ValidationException;
+use Modules\Auth\Actions\Password\ResetPasswordAction;
+use Modules\Auth\Http\Data\ResetPasswordData;
+use Throwable;
 
+/**
+ * Controlador para completar el reset de contraseña con el token recibido por email.
+ *
+ * Thin controller: delega toda la lógica a ResetPasswordAction.
+ * La validación del request ocurre automáticamente al resolver
+ * ResetPasswordData como parámetro (Spatie LaravelData).
+ */
 class NewPasswordController extends Controller
 {
     /**
-     * Handle an incoming new password request.
+     * Completar el reset de contraseña con el token y la nueva contraseña.
+     *
+     * @throws Throwable
      */
-    public function store(Request $request): JsonResponse
+    public function store(ResetPasswordData $data, ResetPasswordAction $action): JsonResponse
     {
-        $request->validate([
-            'token' => ['required'],
-            'email' => ['required', 'email'],
-            'password' => ['required', 'confirmed', Rules\Password::defaults()],
-        ]);
+        $status = $action->update($data);
 
-        // Here we will attempt to reset the user's password. If it is successful we
-        // will update the password on an actual user model and persist it to the
-        // database. Otherwise we will parse the error and return the response.
-        $status = Password::reset(
-            $request->only('email', 'password', 'password_confirmation', 'token'),
-            function ($user) use ($request) {
-                $user->forceFill([
-                    'password' => Hash::make($request->string('password')),
-                    'remember_token' => Str::random(60),
-                ])->save();
-
-                event(new PasswordReset($user));
-            }
-        );
-
-        if ($status != Password::PASSWORD_RESET) {
-            throw ValidationException::withMessages([
-                'email' => [__($status)],
-            ]);
-        }
-
-        return response()->json(['status' => __($status)]);
+        return response()->json(['status' => $status]);
     }
 }

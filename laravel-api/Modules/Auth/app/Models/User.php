@@ -36,10 +36,49 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property-read int|null $notifications_count
  * @property-read Collection<int, PasswordHistory> $passwordHistories
  * @property-read int|null $password_histories_count
+ * @property string $password
  *
  * @method static Builder<static>|User newModelQuery()
  * @method static Builder<static>|User newQuery()
  * @method static Builder<static>|User query()
+ *
+ * @property string $id Identificador único del usuario dentro del sistema
+ * @property string $name Nombre del usuario
+ * @property bool $is_email_verified Indica si un usuario ya fue autenticado
+ * @property Carbon|null $email_verified_at Fecha en la que el usuario ha sido verificado
+ * @property string|null $two_factor_secret Almacena la clave secreta encriptada (TOTP) que se comparte con la app authenticator (Google Authenticator, Authy, etc.) para generar los códigos de 6 dígitos
+ * @property string|null $two_factor_recovery_codes Almacena un array JSON de códigos de recuperación encriptados, usados cuando el usuario no tiene acceso a su app authenticator
+ * @property Carbon|null $two_factor_confirmed_at Fecha de cuando el usuario confirmó/activó el 2FA
+ * @property bool $google_auth_enabled Indica si el usuario puede autenticarse con Google
+ * @property string|null $remember_token Token para mantener la sesión activa entre visitas ("Recordarme")
+ * @property int|null $identification_number Número de identificación
+ * @property string|null $identification_type Tipo de identificación
+ * @property Carbon|null $last_login_at Ultimo login del usuario
+ * @property Carbon|null $last_logout_at Ultimo logout
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ *
+ * @method static UserFactory factory($count = null, $state = [])
+ * @method static Builder<static>|User whereCreatedAt($value)
+ * @method static Builder<static>|User whereEmail($value)
+ * @method static Builder<static>|User whereEmailVerifiedAt($value)
+ * @method static Builder<static>|User whereGoogleAuthEnabled($value)
+ * @method static Builder<static>|User whereId($value)
+ * @method static Builder<static>|User whereIdentificationNumber($value)
+ * @method static Builder<static>|User whereIdentificationType($value)
+ * @method static Builder<static>|User whereIsEmailVerified($value)
+ * @method static Builder<static>|User whereIsTwoFactorEnabled($value)
+ * @method static Builder<static>|User whereLastLoginAt($value)
+ * @method static Builder<static>|User whereLastLogoutAt($value)
+ * @method static Builder<static>|User whereName($value)
+ * @method static Builder<static>|User wherePassword($value)
+ * @method static Builder<static>|User wherePasswordChangedAt($value)
+ * @method static Builder<static>|User whereRememberToken($value)
+ * @method static Builder<static>|User whereSecurityStatus($value)
+ * @method static Builder<static>|User whereTwoFactorConfirmedAt($value)
+ * @method static Builder<static>|User whereTwoFactorRecoveryCodes($value)
+ * @method static Builder<static>|User whereTwoFactorSecret($value)
+ * @method static Builder<static>|User whereUpdatedAt($value)
  *
  * @mixin Eloquent
  */
@@ -47,7 +86,6 @@ use Spatie\Activitylog\Traits\LogsActivity;
 #[Fillable([
     'name',
     'email',
-    'is_email_verified',
     'email_verified_at',
     'password',
     'two_factor_secret',
@@ -113,6 +151,6 @@ class User extends Authenticatable implements MustVerifyEmail
      */
     public function passwordHistories(): HasMany
     {
-        return $this->hasMany(PasswordHistory::class);
+        return $this->hasMany(PasswordHistory::class, 'user_email', 'email');
     }
 }

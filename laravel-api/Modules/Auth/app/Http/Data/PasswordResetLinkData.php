@@ -4,27 +4,18 @@ namespace Modules\Auth\Http\Data;
 
 use Modules\Auth\Enums\AuthErrorCode;
 use Modules\Auth\Rules\RecaptchaV3Rule;
-use Spatie\LaravelData\Attributes\Validation\Password;
 use Spatie\LaravelData\Attributes\Validation\Rule;
 use Spatie\LaravelData\Data;
 
-class LoginData extends Data
+class PasswordResetLinkData extends Data
 {
     public function __construct(
         #[Rule('required|email|max:254')]
         public string $email,
-        #[Password(default: true)]
-        #[Rule('required')]
-        public string $password,
-        #[Rule('nullable|boolean')]
-        public ?bool $remember,
-        #[Rule(['nullable', 'string', new RecaptchaV3Rule('login')])]
+        #[Rule(['required', 'string', new RecaptchaV3Rule('forgot_password')])]
         public ?string $recaptcha_token
     ) {}
 
-    /**
-     * @return array<string, string>
-     */
     public static function messages(): array
     {
         return [
@@ -32,12 +23,6 @@ class LoginData extends Data
             'email.required' => AuthErrorCode::EmailRequired->value,
             'email.email' => AuthErrorCode::EmailInvalid->value,
             'email.max' => AuthErrorCode::EmailTooLong->value,
-
-            // Contraseña
-            'password.required' => AuthErrorCode::PasswordRequired->value,
-
-            // Recordar sesión
-            'remember.boolean' => AuthErrorCode::RememberInvalidFormat->value,
 
             // Recaptcha Token
             'recaptcha_token.string' => AuthErrorCode::RecaptchaInvalidFormat->value,

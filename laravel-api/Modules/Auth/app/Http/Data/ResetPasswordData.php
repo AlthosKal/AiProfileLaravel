@@ -3,23 +3,30 @@
 namespace Modules\Auth\Http\Data;
 
 use Modules\Auth\Enums\AuthErrorCode;
-use Modules\Auth\Rules\RecaptchaV3Rule;
 use Spatie\LaravelData\Attributes\Validation\Password;
 use Spatie\LaravelData\Attributes\Validation\Rule;
 use Spatie\LaravelData\Data;
 
-class LoginData extends Data
+/**
+ * DTO para la solicitud de reset de contraseña.
+ *
+ * Recibe el token generado por el broker, el email del usuario
+ * y la nueva contraseña con su confirmación. El token y el email
+ * son validados por `Password::reset()` internamente, por lo que
+ * aquí solo se garantiza presencia y formato básico.
+ */
+class ResetPasswordData extends Data
 {
     public function __construct(
+        #[Rule('required|string')]
+        public string $token,
         #[Rule('required|email|max:254')]
         public string $email,
         #[Password(default: true)]
-        #[Rule('required')]
+        #[Rule('required|confirmed')]
         public string $password,
-        #[Rule('nullable|boolean')]
-        public ?bool $remember,
-        #[Rule(['nullable', 'string', new RecaptchaV3Rule('login')])]
-        public ?string $recaptcha_token
+        #[Rule('required|string')]
+        public string $password_confirmation,
     ) {}
 
     /**
@@ -28,6 +35,9 @@ class LoginData extends Data
     public static function messages(): array
     {
         return [
+            // Token
+            'token.required' => AuthErrorCode::TokenRequired->value,
+
             // Email
             'email.required' => AuthErrorCode::EmailRequired->value,
             'email.email' => AuthErrorCode::EmailInvalid->value,
@@ -35,12 +45,10 @@ class LoginData extends Data
 
             // Contraseña
             'password.required' => AuthErrorCode::PasswordRequired->value,
+            'password.confirmed' => AuthErrorCode::PasswordConfirmationMismatch->value,
 
-            // Recordar sesión
-            'remember.boolean' => AuthErrorCode::RememberInvalidFormat->value,
-
-            // Recaptcha Token
-            'recaptcha_token.string' => AuthErrorCode::RecaptchaInvalidFormat->value,
+            // Confirmación
+            'password_confirmation.required' => AuthErrorCode::PasswordConfirmationRequired->value,
         ];
     }
 }

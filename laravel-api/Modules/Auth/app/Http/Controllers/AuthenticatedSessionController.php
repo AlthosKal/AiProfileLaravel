@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
-use Modules\Auth\Actions\LoginAction;
+use Modules\Auth\Actions\Auth\LoginAction;
 use Modules\Auth\Http\Data\AuthenticatedSessionResponseData;
 use Modules\Auth\Http\Data\LoginData;
 use Throwable;

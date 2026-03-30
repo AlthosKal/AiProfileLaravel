@@ -22,6 +22,22 @@ use Modules\Auth\Builders\UserSecurityStateBuilder;
  * @method static Builder<static>|UserSecurityState newQuery()
  * @method static Builder<static>|UserSecurityState query()
  *
+ * @property string|null $user_email
+ * @property string|null $name
+ * @property string|null $blocked_reason
+ * @property Carbon|null $blocked_at
+ * @property string|null $blocked_from_ip
+ * @property int|null $lockout_count
+ *
+ * @method static Builder<static>|UserSecurityState whereBlockedAt($value)
+ * @method static Builder<static>|UserSecurityState whereBlockedFromIp($value)
+ * @method static Builder<static>|UserSecurityState whereBlockedReason($value)
+ * @method static Builder<static>|UserSecurityState whereBlockedUntil($value)
+ * @method static Builder<static>|UserSecurityState whereLockoutCount($value)
+ * @method static Builder<static>|UserSecurityState whereName($value)
+ * @method static Builder<static>|UserSecurityState whereSecurityStatus($value)
+ * @method static Builder<static>|UserSecurityState whereUserEmail($value)
+ *
  * @mixin Eloquent
  */
 #[Guarded(['*'])]

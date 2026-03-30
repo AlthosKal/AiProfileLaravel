@@ -15,6 +15,14 @@ use Illuminate\Support\Carbon;
 trait HasPasswordExpiration
 {
     /**
+     * Verificar si el usuario cuenta con una contraseña
+     */
+    public function isPasswordExists(): bool
+    {
+        return $this->password !== null;
+    }
+
+    /**
      * Verificar si la contraseña actual ya venció.
      *
      * Si nunca se ha cambiado la contraseña (`password_changed_at` es null),
@@ -49,5 +57,26 @@ trait HasPasswordExpiration
 
         // Cast explícito a int para evitar warning de conversión implícita
         return (int) max(0, now()->diffInDays($expirationDate));
+    }
+
+    /**
+     * Eliminar entradas antiguas del historial manteniendo solo las últimas N.
+     *
+     * El límite por defecto es 12 para cubrir un año de cambios mensuales,
+     * lo que es suficiente para validar reutilización de contraseñas recientes.
+     */
+    public function cleanOldPasswordHistories(): void
+    {
+        // Obtener los IDs a conservar (los $keep más recientes) y eliminar el resto.
+        // Se usa limit+offset en lugar de skip() solo porque SQLite (tests) no soporta
+        // OFFSET sin LIMIT; el comportamiento es idéntico en producción con MySQL/Postgres.
+        $keepIds = $this->passwordHistories()
+            ->orderByDesc('created_at')
+            ->limit(config('auth.password_history_limit', 12))
+            ->pluck('id');
+
+        $this->passwordHistories()
+            ->when($keepIds->isNotEmpty(), fn ($query) => $query->whereNotIn('id', $keepIds))
+            ->delete();
     }
 }

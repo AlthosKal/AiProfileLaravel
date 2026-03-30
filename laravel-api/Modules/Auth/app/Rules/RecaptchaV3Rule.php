@@ -5,7 +5,7 @@ namespace Modules\Auth\Rules;
 use Closure;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Translation\PotentiallyTranslatedString;
-use Modules\Auth\Actions\RecaptchaVerificationAction;
+use Modules\Auth\Actions\Auth\RecaptchaVerificationAction;
 use Modules\Auth\Enums\AuthErrorCode;
 
 readonly class RecaptchaV3Rule implements ValidationRule

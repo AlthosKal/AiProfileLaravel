@@ -13,13 +13,14 @@ return new class extends Migration
     {
         Schema::create('password_histories', function (Blueprint $table) {
             $table->id();
-            $table->foreignUuid('user_id')->constrained('users')->cascadeOnDelete();
+            $table->string('user_email');
+            $table->foreign('user_email')->references('email')->on('users')->cascadeOnDelete();
             $table->string('password')->comment('Contraseña prevía del usuario registrado en el sistema');
 
             $table->timestamps();
 
             // Index para búsquedas
-            $table->index(['user_id', 'created_at']);
+            $table->index(['user_email', 'created_at']);
         });
     }
 

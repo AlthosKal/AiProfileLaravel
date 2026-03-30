@@ -3,7 +3,7 @@
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Translation\PotentiallyTranslatedString;
-use Modules\Auth\Actions\RecaptchaVerificationAction;
+use Modules\Auth\Actions\Auth\RecaptchaVerificationAction;
 use Modules\Auth\Exceptions\RecaptchaVerificationException;
 use Modules\Auth\Rules\RecaptchaV3Rule;
 use Modules\Shared\Actions\CircuitBreakerAction;

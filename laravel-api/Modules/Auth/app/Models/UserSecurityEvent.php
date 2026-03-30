@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 use Modules\Auth\Enums\SecurityEventTypeEnum;
 use Modules\Auth\Enums\SecurityStatusEnum;
 use Modules\Auth\Models\Concerns\LogsSecurityEvents;
@@ -23,6 +24,29 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static Builder<static>|UserSecurityEvent newModelQuery()
  * @method static Builder<static>|UserSecurityEvent newQuery()
  * @method static Builder<static>|UserSecurityEvent query()
+ *
+ * @property string $id Identificador único del evento de seguridad
+ * @property string $event_type Tipo de evento de seguridad
+ * @property string|null $ip_address Dirección IP desde la que se originó el evento (soporta IPv4 e IPv6)
+ * @property string $reason Razón por la cual se registró el evento
+ * @property Carbon $event_at Fecha y hora en que ocurrió el evento
+ * @property Carbon|null $expires_at Fecha y hora en la que expira el bloqueo temporal; null si el bloqueo es permanente o el evento no es un bloqueo
+ * @property int $lockout_count_at_time Número acumulado de bloqueos del usuario en el momento del evento
+ * @property array<array-key, mixed>|null $metadata Datos adicionales del evento: user_agent, detalles, etc.
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ *
+ * @method static Builder<static>|UserSecurityEvent whereCreatedAt($value)
+ * @method static Builder<static>|UserSecurityEvent whereEventAt($value)
+ * @method static Builder<static>|UserSecurityEvent whereEventType($value)
+ * @method static Builder<static>|UserSecurityEvent whereExpiresAt($value)
+ * @method static Builder<static>|UserSecurityEvent whereId($value)
+ * @method static Builder<static>|UserSecurityEvent whereIpAddress($value)
+ * @method static Builder<static>|UserSecurityEvent whereLockoutCountAtTime($value)
+ * @method static Builder<static>|UserSecurityEvent whereMetadata($value)
+ * @method static Builder<static>|UserSecurityEvent whereReason($value)
+ * @method static Builder<static>|UserSecurityEvent whereUpdatedAt($value)
+ * @method static Builder<static>|UserSecurityEvent whereUserEmail($value)
  *
  * @mixin Eloquent
  */

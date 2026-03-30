@@ -17,7 +17,6 @@ return new class extends Migration
             $table->uuid('id')->primary()->comment('Identificador único del usuario dentro del sistema');
             $table->string('name')->comment('Nombre del usuario');
             $table->string('email')->unique()->comment('Correo electrónico del usuario');
-            $table->boolean('is_email_verified')->default(false)->comment('Indica si un usuario ya fue autenticado');
             $table->timestamp('email_verified_at')->nullable()->comment('Fecha en la que el usuario ha sido verificado');
             $table->string('password')->comment('Contraseña encriptada del usuario');
             $table->text('two_factor_secret')->nullable()->comment('Almacena la clave secreta encriptada (TOTP) que se comparte con la app authenticator (Google Authenticator, Authy, etc.) para generar los códigos de 6 dígitos');
