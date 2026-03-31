@@ -3,6 +3,8 @@
 use Illuminate\Auth\Events\Verified;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\URL;
+use Laravel\Sanctum\Sanctum;
+use Modules\Auth\Enums\AuthSuccessCode;
 use Modules\Auth\Models\User;
 
 test('email can be verified', function () {
@@ -16,11 +18,14 @@ test('email can be verified', function () {
         ['id' => $user->id, 'hash' => sha1($user->email)]
     );
 
-    $response = $this->actingAs($user)->get($verificationUrl);
+    Sanctum::actingAs($user);
+
+    $this->getJson($verificationUrl)
+        ->assertSuccessful()
+        ->assertJsonFragment(['status' => AuthSuccessCode::EmailVerified->value]);
 
     Event::assertDispatched(Verified::class);
     expect($user->fresh()->hasVerifiedEmail())->toBeTrue();
-    $response->assertRedirect(config('app.frontend_url').'/dashboard?verified=1');
 });
 
 test('email is not verified with invalid hash', function () {
@@ -32,7 +37,9 @@ test('email is not verified with invalid hash', function () {
         ['id' => $user->id, 'hash' => sha1('wrong-email')]
     );
 
-    $this->actingAs($user)->get($verificationUrl);
+    Sanctum::actingAs($user);
+
+    $this->getJson($verificationUrl)->assertForbidden();
 
     expect($user->fresh()->hasVerifiedEmail())->toBeFalse();
 });
