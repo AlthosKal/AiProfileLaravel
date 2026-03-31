@@ -40,8 +40,11 @@ readonly class ResetPasswordAction
      */
     public function update(ResetPasswordData $data): string
     {
+        // El broker solo necesita token, email y password para validar y buscar al usuario.
+        // No se pasa el array completo del DTO para evitar que campos extra (recaptcha_token)
+        // interfieran con la búsqueda del UserProvider.
         $status = Password::reset(
-            $data->toArray(),
+            ['token' => $data->token, 'email' => $data->email, 'password' => $data->password],
             function ($user) use ($data): void {
                 // Actualizar contraseña, password_changed_at e historial
                 $this->updateUserPasswordAction->update($user, $data->password);

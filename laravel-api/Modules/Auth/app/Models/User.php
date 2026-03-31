@@ -16,6 +16,8 @@ use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Notifications\DatabaseNotificationCollection;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Carbon;
+use Laravel\Sanctum\HasApiTokens;
+use Laravel\Sanctum\PersonalAccessToken; // usado solo en PHPDoc para tipado de la relación tokens()
 use Modules\Auth\Database\Factories\UserFactory;
 use Modules\Auth\Enums\SecurityStatusEnum;
 use Modules\Auth\Models\Concerns\HasActivityLog;
@@ -36,6 +38,8 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property-read int|null $notifications_count
  * @property-read Collection<int, PasswordHistory> $passwordHistories
  * @property-read int|null $password_histories_count
+ * @property-read Collection<int, PersonalAccessToken> $tokens
+ * @property-read int|null $tokens_count
  * @property string $password
  *
  * @method static Builder<static>|User newModelQuery()
@@ -112,7 +116,7 @@ class User extends Authenticatable implements MustVerifyEmail
     use HasActivityLog, HasPasswordExpiration, HasSecurityStatus;
 
     /** @use HasFactory<UserFactory> */
-    use HasFactory, HasUuids, LogsActivity, Notifiable;
+    use HasApiTokens, HasFactory, HasUuids, LogsActivity, Notifiable;
 
     protected static function newFactory(): UserFactory
     {

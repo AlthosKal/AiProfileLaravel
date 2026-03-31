@@ -14,6 +14,8 @@ enum AuthSuccessCode: string
     case LogoutSuccess = 'logout_success';
 
     // Email verification
+    case EmailVerified = 'email_verified';
+    case EmailAlreadyVerified = 'email_already_verified';
     case VerificationLinkSent = 'verification_link_sent';
 
     // Password reset

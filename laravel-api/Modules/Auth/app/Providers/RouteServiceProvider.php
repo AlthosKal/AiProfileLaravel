@@ -24,8 +24,21 @@ class RouteServiceProvider extends ServiceProvider
      */
     public function map(): void
     {
+        $this->mapAuthRoutes();
         $this->mapApiRoutes();
         $this->mapWebRoutes();
+    }
+
+    /**
+     * Define las rutas de autenticación del módulo.
+     *
+     * Usa middleware `api` porque el sistema utiliza Sanctum API tokens (stateless).
+     * Los tokens se envían en el header `Authorization: Bearer {token}` — no se
+     * requiere sesión, cookies ni CSRF.
+     */
+    protected function mapAuthRoutes(): void
+    {
+        Route::middleware('api')->prefix('api')->group(module_path($this->name, '/routes/auth.php'));
     }
 
     /**

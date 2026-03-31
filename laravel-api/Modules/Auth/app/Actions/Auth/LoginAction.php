@@ -3,7 +3,7 @@
 namespace Modules\Auth\Actions\Auth;
 
 use Illuminate\Auth\Events\Lockout;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
@@ -76,8 +76,13 @@ readonly class LoginAction
 
         $this->enforceRateLimiting($key, $maxAttempts, $data->email, $ip);
 
-        // 4. Intentar autenticación con las credenciales provistas.
-        if (! Auth::attempt(['email' => $data->email, 'password' => $data->password], $data->remember ?? false)) {
+        // 4. Verificar credenciales directamente con Hash::check().
+        //    Con Sanctum API tokens no se usa Auth::attempt() porque ese método
+        //    requiere un SessionGuard (web). Al ser stateless, las credenciales se
+        //    validan manualmente y el token se crea en el paso 6 — sin sesión ni cookies.
+        $user = User::where('email', $data->email)->first();
+
+        if (! $user || ! Hash::check($data->password, $user->password)) {
             // El decay también es progresivo: 1 minuto en el primer ciclo, 1 hora después.
             // Esto alinea el tiempo de bloqueo del Rate Limiter con el del lockout.
             $decaySeconds = $lockoutCount === 0 ? 60 : 3600;
@@ -106,12 +111,13 @@ readonly class LoginAction
 
         Log::info("Login exitoso para $data->email con ip $ip");
 
-        // 6. Construir y retornar las flags de estado post-login.
-        //    No interrumpen el flujo — el frontend decide cómo reaccionar a cada una.
-        /** @var User $user */
-        $user = Auth::user();
+        // 6. Crear el token Sanctum y construir las flags de estado post-login.
+        //    El plainTextToken solo está disponible en este momento — en DB se guarda
+        //    su hash SHA-256 y no puede recuperarse después.
+        //    Las flags no interrumpen el flujo — el frontend decide cómo reaccionar.
 
         return new LoginResponseData(
+            token: $user->createToken($data->device_name)->plainTextToken,
             twoFactorRequired: $user->hasTwoFactorEnabled(),
             emailVerificationRequired: ! $user->hasVerifiedEmail(),
             passwordExpiringSoon: $this->isPasswordAboutToExpire($user),

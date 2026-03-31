@@ -24,6 +24,11 @@ class UserFactory extends Factory
         ];
     }
 
+    public function unverified(): static
+    {
+        return $this->state(['email_verified_at' => null]);
+    }
+
     public function permanentlyBlocked(): static
     {
         return $this->state(['security_status' => SecurityStatusEnum::PERMANENTLY_BLOCKED]);

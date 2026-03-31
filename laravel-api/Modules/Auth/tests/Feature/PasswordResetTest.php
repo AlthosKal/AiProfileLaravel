@@ -70,12 +70,14 @@ describe('ResetPasswordAction', function () {
 
         $user = User::factory()->create(['email' => 'user@example.com']);
         $token = Password::createToken($user);
+        $recaptcha_token = 'password_reset_test';
 
         $action = app(ResetPasswordAction::class);
         $data = new ResetPasswordData(
             token: $token,
             email: 'user@example.com',
             password: 'NuevaPassword1!',
+            recaptcha_token: $recaptcha_token,
         );
 
         $status = $action->update($data);
@@ -87,12 +89,14 @@ describe('ResetPasswordAction', function () {
     it('actualiza la contraseña en la base de datos', function () {
         $user = User::factory()->create(['email' => 'user@example.com']);
         $token = Password::createToken($user);
+        $recaptcha_token = 'password_reset_test';
 
         $action = app(ResetPasswordAction::class);
         $data = new ResetPasswordData(
             token: $token,
             email: 'user@example.com',
             password: 'NuevaPassword1!',
+            recaptcha_token: $recaptcha_token,
         );
 
         $action->update($data);
@@ -103,12 +107,14 @@ describe('ResetPasswordAction', function () {
     it('registra password_changed_at al resetear', function () {
         $user = User::factory()->create(['email' => 'user@example.com']);
         $token = Password::createToken($user);
+        $recaptcha_token = 'password_reset_test';
 
         $action = app(ResetPasswordAction::class);
         $data = new ResetPasswordData(
             token: $token,
             email: 'user@example.com',
             password: 'NuevaPassword1!',
+            recaptcha_token: $recaptcha_token,
         );
 
         $action->update($data);
@@ -119,11 +125,13 @@ describe('ResetPasswordAction', function () {
     it('lanza ValidationException con clave semántica cuando el token es inválido', function () {
         User::factory()->create(['email' => 'user@example.com']);
 
+        $recaptcha_token = 'password_reset_test';
         $action = app(ResetPasswordAction::class);
         $data = new ResetPasswordData(
             token: 'token-invalido',
             email: 'user@example.com',
             password: 'NuevaPassword1!',
+            recaptcha_token: $recaptcha_token,
         );
 
         try {
@@ -140,11 +148,13 @@ describe('ResetPasswordAction', function () {
         $oldHash = $user->password;
         $token = Password::createToken($user);
 
+        $recaptcha_token = 'password_reset_test';
         $action = app(ResetPasswordAction::class);
         $data = new ResetPasswordData(
             token: $token,
             email: 'user@example.com',
             password: 'NuevaPassword1!',
+            recaptcha_token: $recaptcha_token,
         );
 
         $action->update($data);

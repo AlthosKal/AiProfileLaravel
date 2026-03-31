@@ -4,8 +4,8 @@ namespace Modules\Auth\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Http\Response;
-use Illuminate\Support\Facades\Auth;
 use Modules\Auth\Actions\Auth\LoginAction;
 use Modules\Auth\Enums\AuthSuccessCode;
 use Modules\Auth\Http\Data\AuthenticatedSessionResponseData;
@@ -14,40 +14,39 @@ use Throwable;
 
 class AuthenticatedSessionController extends Controller
 {
+    public function __construct(
+        private readonly LoginAction $action
+    ) {}
+
     /**
-     * Handle an incoming authentication request.
+     * Autenticar al usuario y retornar el token Sanctum junto con el estado post-login.
      *
-     * Retorna un JSON con las flags de estado post-login para que el frontend
-     * pueda redirigir al desafío 2FA, a verificación de email, o mostrar
-     * una advertencia de contraseña próxima a vencer según corresponda.
+     * El token debe incluirse en el header `Authorization: Bearer {token}` en todos
+     * los requests autenticados subsiguientes. Las flags post-login permiten al frontend
+     * redirigir al desafío 2FA, a verificación de email, o mostrar advertencia de
+     * contraseña próxima a vencer según corresponda.
      *
      * @throws Throwable
      */
-    public function store(LoginData $data, LoginAction $action): JsonResponse
+    public function store(LoginData $data): JsonResponse
     {
         $result = AuthenticatedSessionResponseData::fromLoginResponse(
-            $action->login($data, request()->ip())
+            $this->action->login($data, request()->ip())
         );
-
-        request()->session()->regenerate();
 
         return $this->success(AuthSuccessCode::LoginSuccess->value, $result);
     }
 
     /**
-     * Destroy an authenticated session.
+     * Revocar el token Sanctum del request actual.
      *
-     * Con Sanctum SPA authentication la sesión vive en una cookie.
-     * `invalidate()` la destruye completamente, y `regenerateToken()`
-     * rota el token CSRF para que el SPA no pueda reutilizar el anterior.
+     * Con API token authentication el "logout" consiste en eliminar el token
+     * de la tabla personal_access_tokens. Solo se revoca el token del dispositivo
+     * actual — los tokens de otros dispositivos permanecen activos.
      */
-    public function destroy(): Response
+    public function destroy(Request $request): Response
     {
-        Auth::logout();
-
-        request()->session()->invalidate();
-
-        request()->session()->regenerateToken();
+        $request->user()->currentAccessToken()->delete();
 
         return response()->noContent();
     }

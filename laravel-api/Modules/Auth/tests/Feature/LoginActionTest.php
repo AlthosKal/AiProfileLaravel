@@ -21,11 +21,12 @@ uses(RefreshDatabase::class);
  * Helpers de setup reutilizables en todo el archivo.
  * Se definen como funciones globales para evitar repetición en beforeEach anidados.
  */
-function makeLoginData(string $email = 'user@example.com', string $password = 'password', ?string $recaptcha = null): LoginData
+function makeLoginData(string $email = 'user@example.com', string $password = 'password', ?string $recaptcha = null, string $device = 'Test Device'): LoginData
 {
     return new LoginData(
         email: $email,
         password: $password,
+        device_name: $device,
         remember: false,
         recaptcha_token: $recaptcha,
     );
@@ -66,12 +67,14 @@ beforeEach(function () use (&$action) {
 // ─────────────────────────────────────────────────────────────
 
 describe('login exitoso', function () use (&$action) {
-    it('autentica al usuario con credenciales correctas', function () use (&$action) {
+    it('retorna un token Sanctum con credenciales correctas', function () use (&$action) {
         User::factory()->create(['email' => 'user@example.com', 'password' => bcrypt('password')]);
 
-        $action->login(makeLoginData(), '127.0.0.1');
+        $result = $action->login(makeLoginData(), '127.0.0.1');
 
-        expect(auth()->check())->toBeTrue();
+        // Con API tokens el login es stateless — no queda sesión activa.
+        // El resultado correcto es un token de acceso válido.
+        expect($result->token)->not->toBeEmpty()->toBeString();
     });
 
     it('limpia el cache de lockout al autenticarse correctamente', function () {
@@ -157,9 +160,9 @@ describe('throttle - lockout', function () use (&$action) {
         } catch (LoginThrottledException $e) {
             $data = $e->render()->getData(assoc: true);
 
-            expect($data['lockout']['retry_after'])->toBeInt()->toBeGreaterThan(0)
-                ->and($data['lockout']['captcha_required'])->toBeTrue()
-                ->and($data['lockout']['permanently_blocked'])->toBeFalse();
+            expect($data['data']['lockout']['retry_after'])->toBeInt()->toBeGreaterThan(0)
+                ->and($data['data']['lockout']['captcha_required'])->toBeTrue()
+                ->and($data['data']['lockout']['permanently_blocked'])->toBeFalse();
         }
     });
 
@@ -191,9 +194,9 @@ describe('usuario bloqueado temporalmente', function () use (&$action) {
         ]);
 
         // Con blocked_until null, isTemporarilyBlocked() devuelve false → login procede
-        $action->login(makeLoginData(), '127.0.0.1');
+        $result = $action->login(makeLoginData(), '127.0.0.1');
 
-        expect(auth()->check())->toBeTrue();
+        expect($result->token)->not->toBeEmpty()->toBeString();
     });
 });
 

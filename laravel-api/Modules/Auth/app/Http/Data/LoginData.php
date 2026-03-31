@@ -8,6 +8,12 @@ use Spatie\LaravelData\Attributes\Validation\Password;
 use Spatie\LaravelData\Attributes\Validation\Rule;
 use Spatie\LaravelData\Data;
 
+/**
+ * DTO para la solicitud de inicio de sesión.
+ *
+ * Incluye device_name para nombrar el token Sanctum generado,
+ * permitiendo al usuario identificar y revocar sesiones activas por dispositivo.
+ */
 class LoginData extends Data
 {
     public function __construct(
@@ -16,6 +22,8 @@ class LoginData extends Data
         #[Password(default: true)]
         #[Rule('required')]
         public string $password,
+        #[Rule('required|string|max:255')]
+        public string $device_name,
         #[Rule('nullable|boolean')]
         public ?bool $remember,
         #[Rule(['nullable', 'string', new RecaptchaV3Rule('login')])]
@@ -35,6 +43,10 @@ class LoginData extends Data
 
             // Contraseña
             'password.required' => AuthErrorCode::PasswordRequired->value,
+
+            // Nombre del dispositivo (identifica el token Sanctum en sesiones activas)
+            'device_name.required' => AuthErrorCode::DeviceNameRequired->value,
+            'device_name.max' => AuthErrorCode::DeviceNameTooLong->value,
 
             // Recordar sesión
             'remember.boolean' => AuthErrorCode::RememberInvalidFormat->value,

@@ -3,6 +3,8 @@
 namespace Modules\Auth\Http\Data;
 
 use Modules\Auth\Enums\AuthErrorCode;
+use Modules\Auth\Rules\NotInPasswordHistory;
+use Modules\Auth\Rules\RecaptchaV3Rule;
 use Spatie\LaravelData\Attributes\Validation\Password;
 use Spatie\LaravelData\Attributes\Validation\Rule;
 use Spatie\LaravelData\Data;
@@ -23,9 +25,23 @@ class ResetPasswordData extends Data
         #[Rule('required|email|max:254')]
         public string $email,
         #[Password(default: true)]
-        #[Rule('required|confirmed')]
+        #[Rule(['required', 'confirmed'])]
         public string $password,
+        #[Rule(['nullable', 'string', new RecaptchaV3Rule('reset_password')])]
+        public ?string $recaptcha_token,
     ) {}
+
+    /**
+     * @return array<string, array<int, mixed>>
+     */
+    public static function rules(): array
+    {
+        $email = request()->input('email');
+
+        return [
+            'password' => ['required', 'confirmed', new NotInPasswordHistory($email)],
+        ];
+    }
 
     /**
      * @return array<string, string>
@@ -44,6 +60,9 @@ class ResetPasswordData extends Data
             // Contraseña
             'password.required' => AuthErrorCode::PasswordRequired->value,
             'password.confirmed' => AuthErrorCode::PasswordConfirmationMismatch->value,
+
+            // Recaptcha Token
+            'recaptcha_token.string' => AuthErrorCode::RecaptchaInvalidFormat->value,
         ];
     }
 }

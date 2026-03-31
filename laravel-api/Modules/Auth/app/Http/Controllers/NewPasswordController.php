@@ -17,14 +17,18 @@ use Throwable;
  */
 class NewPasswordController extends Controller
 {
+    public function __construct(
+        private readonly ResetPasswordAction $action,
+    ) {}
+
     /**
      * Completar el reset de contraseña con el token y la nueva contraseña.
      *
      * @throws Throwable
      */
-    public function store(ResetPasswordData $data, ResetPasswordAction $action): JsonResponse
+    public function store(ResetPasswordData $data): JsonResponse
     {
-        $status = $action->update($data);
+        $status = $this->action->update($data);
 
         return $this->success($status);
     }

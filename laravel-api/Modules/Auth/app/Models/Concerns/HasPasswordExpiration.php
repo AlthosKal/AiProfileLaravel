@@ -2,7 +2,10 @@
 
 namespace Modules\Auth\Models\Concerns;
 
+use Hash;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
+use Modules\Auth\Models\PasswordHistory;
 
 /**
  * Funcionalidad de expiración de contraseña para el modelo User.
@@ -60,6 +63,16 @@ trait HasPasswordExpiration
     }
 
     /**
+     * @return HasMany<PasswordHistory, $this>
+     */
+    public function getPasswordHistories(): HasMany
+    {
+        return $this->passwordHistories()
+            ->orderByDesc('created_at')
+            ->limit(config('auth.password_history_limit', 12));
+    }
+
+    /**
      * Eliminar entradas antiguas del historial manteniendo solo las últimas N.
      *
      * El límite por defecto es 12 para cubrir un año de cambios mensuales,
@@ -70,13 +83,19 @@ trait HasPasswordExpiration
         // Obtener los IDs a conservar (los $keep más recientes) y eliminar el resto.
         // Se usa limit+offset en lugar de skip() solo porque SQLite (tests) no soporta
         // OFFSET sin LIMIT; el comportamiento es idéntico en producción con MySQL/Postgres.
-        $keepIds = $this->passwordHistories()
-            ->orderByDesc('created_at')
-            ->limit(config('auth.password_history_limit', 12))
+        $keepIds = $this->getPasswordHistories()
             ->pluck('id');
 
         $this->passwordHistories()
             ->when($keepIds->isNotEmpty(), fn ($query) => $query->whereNotIn('id', $keepIds))
             ->delete();
+    }
+
+    public function verifyPasswordHistories(string $value): bool
+    {
+        return $this->getPasswordHistories()
+            ->select('password')
+            ->get()
+            ->some(fn ($history) => Hash::check($value, $history->password));
     }
 }

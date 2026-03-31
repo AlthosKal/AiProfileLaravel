@@ -25,12 +25,15 @@ enum AuthErrorCode: string
     // Password reset
     case PasswordResetLinkFailed = 'password_reset_link_failed';
     case PasswordResetFailed = 'password_reset_failed';
+    case PasswordInHistory = 'password_in_history';
 
     // Validación de campos del Login
     case EmailRequired = 'email_required';
     case EmailInvalid = 'email_invalid';
     case EmailTooLong = 'email_too_long';
     case PasswordRequired = 'password_required';
+    case DeviceNameRequired = 'device_name_required';
+    case DeviceNameTooLong = 'device_name_too_long';
     case RememberInvalidFormat = 'remember_invalid_format';
     case RecaptchaInvalidFormat = 'recaptcha_invalid_format';
 

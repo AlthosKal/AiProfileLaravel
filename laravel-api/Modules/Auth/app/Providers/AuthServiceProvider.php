@@ -19,6 +19,7 @@ class AuthServiceProvider extends ModuleServiceProvider
      */
     protected string $nameLower = 'auth';
 
+    public function boot(): void {}
     /**
      * Command classes to register.
      *

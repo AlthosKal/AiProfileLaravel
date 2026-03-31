@@ -16,12 +16,16 @@ use Modules\Auth\Http\Data\PasswordResetLinkData;
  */
 class PasswordResetLinkController extends Controller
 {
+    public function __construct(
+        private readonly SendPasswordResetLinkAction $action
+    ) {}
+
     /**
      * Enviar el link de recuperación de contraseña al email indicado.
      */
-    public function store(PasswordResetLinkData $data, SendPasswordResetLinkAction $action): JsonResponse
+    public function store(PasswordResetLinkData $data): JsonResponse
     {
-        $status = $action->send($data);
+        $status = $this->action->send($data);
 
         return $this->success($status);
     }
