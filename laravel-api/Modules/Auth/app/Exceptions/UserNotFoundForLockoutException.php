@@ -12,11 +12,13 @@ class UserNotFoundForLockoutException extends BaseException
      */
     protected $code = 503;
 
-    public function __construct(string $message = '', array $details = [])
+    /**
+     * @param  array<string, mixed>  $details
+     */
+    public function __construct(array $details = [])
     {
         parent::__construct(
             errorCode: AuthErrorCode::LockoutUserNotFound,
-            message: $message,
             details: $details,
         );
     }

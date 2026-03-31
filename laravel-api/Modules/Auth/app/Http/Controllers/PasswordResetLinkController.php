@@ -23,6 +23,6 @@ class PasswordResetLinkController extends Controller
     {
         $status = $action->send($data);
 
-        return response()->json(['status' => $status]);
+        return $this->success($status);
     }
 }

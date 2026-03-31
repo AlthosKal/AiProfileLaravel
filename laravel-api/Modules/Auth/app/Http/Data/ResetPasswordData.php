@@ -25,8 +25,6 @@ class ResetPasswordData extends Data
         #[Password(default: true)]
         #[Rule('required|confirmed')]
         public string $password,
-        #[Rule('required|string')]
-        public string $password_confirmation,
     ) {}
 
     /**
@@ -46,9 +44,6 @@ class ResetPasswordData extends Data
             // Contraseña
             'password.required' => AuthErrorCode::PasswordRequired->value,
             'password.confirmed' => AuthErrorCode::PasswordConfirmationMismatch->value,
-
-            // Confirmación
-            'password_confirmation.required' => AuthErrorCode::PasswordConfirmationRequired->value,
         ];
     }
 }

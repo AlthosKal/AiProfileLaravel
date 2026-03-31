@@ -7,6 +7,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 use Modules\Auth\Actions\Auth\LoginAction;
+use Modules\Auth\Enums\AuthSuccessCode;
 use Modules\Auth\Http\Data\AuthenticatedSessionResponseData;
 use Modules\Auth\Http\Data\LoginData;
 use Throwable;
@@ -30,7 +31,7 @@ class AuthenticatedSessionController extends Controller
 
         request()->session()->regenerate();
 
-        return response()->json($result);
+        return $this->success(AuthSuccessCode::LoginSuccess->value, $result);
     }
 
     /**

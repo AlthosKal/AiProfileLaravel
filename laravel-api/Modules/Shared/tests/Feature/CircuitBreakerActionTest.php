@@ -186,16 +186,16 @@ describe('utilidades', function () {
             ]);
     });
 
-    it('CircuitBreakerOpenException contiene el mensaje correcto', function () {
+    it('CircuitBreakerOpenException tiene los datos correctos', function () {
         $e = new CircuitBreakerOpenException(
             serviceName: SERVICE,
             failureCount: failureThreshold(),
             recoveryTimeout: recoveryTimeout(),
         );
 
-        expect($e->getMessage())->toContain(SERVICE)
-            ->and($e->serviceName)->toBe(SERVICE)
+        expect($e->serviceName)->toBe(SERVICE)
             ->and($e->failureCount)->toBe(failureThreshold())
-            ->and($e->recoveryTimeout)->toBe(recoveryTimeout());
+            ->and($e->recoveryTimeout)->toBe(recoveryTimeout())
+            ->and($e->getErrorCode())->toBe('circuit_breaker_open');
     });
 });

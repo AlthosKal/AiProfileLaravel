@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Modules\Auth\Enums\AuthSuccessCode;
 
 class EmailVerificationNotificationController extends Controller
 {
@@ -20,6 +21,6 @@ class EmailVerificationNotificationController extends Controller
 
         $request->user()->sendEmailVerificationNotification();
 
-        return response()->json(['status' => 'verification-link-sent']);
+        return $this->success(AuthSuccessCode::VerificationLinkSent->value);
     }
 }

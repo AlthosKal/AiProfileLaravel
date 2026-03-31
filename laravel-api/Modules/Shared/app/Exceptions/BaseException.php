@@ -6,9 +6,12 @@ use BackedEnum;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Modules\Shared\Enums\SharedErrorCode;
+use Modules\Shared\Traits\JsonResponseTrait;
 
 abstract class BaseException extends Exception
 {
+    use JsonResponseTrait;
+
     /** @var array<string, mixed> */
     protected array $details = [];
 
@@ -17,10 +20,9 @@ abstract class BaseException extends Exception
      */
     public function __construct(
         private readonly BackedEnum $errorCode = SharedErrorCode::BaseError,
-        string $message = '',
         array $details = [],
     ) {
-        parent::__construct($message, $this->code);
+        parent::__construct('', $this->code);
         $this->details = $details;
     }
 
@@ -59,10 +61,6 @@ abstract class BaseException extends Exception
      */
     public function render(): JsonResponse
     {
-        return response()->json([
-            'error' => $this->errorCode->value,
-            'message' => $this->getMessage(),
-            'details' => $this->details,
-        ], $this->code ?: 500);
+        return $this->error($this->errorCode->value, $this->code ?: 500, $this->details !== [] ? $this->details : null);
     }
 }

@@ -4,8 +4,10 @@ namespace Modules\Auth\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
-use Modules\Auth\Enums\AuthErrorCode;
-use Symfony\Component\HttpFoundation\Response;
+use Illuminate\Http\Response;
+use Modules\Auth\Enums\AuthStatusCode;
+use Modules\Shared\Traits\JsonResponseTrait;
+use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 /**
  * Middleware que protege rutas que requieren email verificado.
@@ -19,10 +21,12 @@ use Symfony\Component\HttpFoundation\Response;
  */
 class EnsureEmailIsVerified
 {
-    public function handle(Request $request, Closure $next): Response
+    use JsonResponseTrait;
+
+    public function handle(Request $request, Closure $next): SymfonyResponse
     {
         if (! $request->user() || ! $request->user()->hasVerifiedEmail()) {
-            return response()->json(AuthErrorCode::EmailVerificationRequired->value, 409);
+            return $this->error(AuthStatusCode::EmailVerificationRequired->value, Response::HTTP_CONFLICT);
         }
 
         return $next($request);

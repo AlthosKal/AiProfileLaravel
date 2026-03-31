@@ -2,7 +2,7 @@
 
 namespace Modules\Auth\Http\Data;
 
-use Modules\Auth\Enums\AuthErrorCode;
+use Modules\Auth\Enums\AuthStatusCode;
 
 /**
  * DTO que encapsula la respuesta JSON del endpoint de login.
@@ -29,9 +29,9 @@ final readonly class AuthenticatedSessionResponseData
     public static function fromLoginResponse(LoginResponseData $data): self
     {
         return new self(
-            twoFactorCode: $data->twoFactorRequired ? AuthErrorCode::TwoFactorRequired->value : null,
-            emailVerificationCode: $data->emailVerificationRequired ? AuthErrorCode::EmailVerificationRequired->value : null,
-            passwordExpirationCode: $data->passwordExpiringSoon ? AuthErrorCode::PasswordExpiringSoon->value : null,
+            twoFactorCode: $data->twoFactorRequired ? AuthStatusCode::TwoFactorRequired->value : null,
+            emailVerificationCode: $data->emailVerificationRequired ? AuthStatusCode::EmailVerificationRequired->value : null,
+            passwordExpirationCode: $data->passwordExpiringSoon ? AuthStatusCode::PasswordExpiringSoon->value : null,
             daysUntilPasswordExpires: $data->daysUntilPasswordExpires,
         );
     }

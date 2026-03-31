@@ -29,7 +29,7 @@ trait LogsSecurityEvents
         int $lockoutCount,
         ?User $triggeredBy = null,
     ): static {
-        return static::create([
+        return static::query()->create([
             'user_email' => $user->email,
             'event_type' => SecurityStatusEnum::TEMPORARILY_BLOCKED->value,
             'ip_address' => $ipAddress,
@@ -57,7 +57,7 @@ trait LogsSecurityEvents
         ?User $admin = null,
         int $lockoutCount = 0,
     ): static {
-        return static::create([
+        return static::query()->create([
             'user_email' => $user->email,
             'event_type' => SecurityStatusEnum::PERMANENTLY_BLOCKED->value,
             'ip_address' => $ipAddress,
@@ -79,7 +79,7 @@ trait LogsSecurityEvents
         User $user,
         string $reason = 'Bloqueo temporal expirado',
     ): static {
-        return static::create([
+        return static::query()->create([
             'user_email' => $user->email,
             'event_type' => SecurityEventTypeEnum::AUTO_UNBLOCK->value,
             'ip_address' => request()->ip(),

@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Modules\Auth\Enums\AuthErrorCode;
+use Modules\Auth\Enums\AuthSuccessCode;
 use Modules\Auth\Http\Data\ResetPasswordData;
 use Throwable;
 
@@ -59,6 +60,6 @@ readonly class ResetPasswordAction
             ])
         );
 
-        return AuthErrorCode::PasswordResetSuccess->value;
+        return AuthSuccessCode::PasswordResetSuccess->value;
     }
 }

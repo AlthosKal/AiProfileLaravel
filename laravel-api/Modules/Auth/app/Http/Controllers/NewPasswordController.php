@@ -26,6 +26,6 @@ class NewPasswordController extends Controller
     {
         $status = $action->update($data);
 
-        return response()->json(['status' => $status]);
+        return $this->success($status);
     }
 }

@@ -10,6 +10,7 @@ use Illuminate\Validation\ValidationException;
 use Modules\Auth\Actions\Password\ResetPasswordAction;
 use Modules\Auth\Actions\Password\SendPasswordResetLinkAction;
 use Modules\Auth\Enums\AuthErrorCode;
+use Modules\Auth\Enums\AuthSuccessCode;
 use Modules\Auth\Http\Data\PasswordResetLinkData;
 use Modules\Auth\Http\Data\ResetPasswordData;
 use Modules\Auth\Mail\ResetPasswordMail;
@@ -34,7 +35,7 @@ describe('SendPasswordResetLinkAction', function () {
 
         $status = $action->send($data);
 
-        expect($status)->toBe(AuthErrorCode::PasswordResetLinkSent->value);
+        expect($status)->toBe(AuthSuccessCode::PasswordResetLinkSent->value);
     });
 
     it('retorna la misma clave semántica cuando el email NO existe para evitar enumeración de usuarios', function () {
@@ -75,12 +76,11 @@ describe('ResetPasswordAction', function () {
             token: $token,
             email: 'user@example.com',
             password: 'NuevaPassword1!',
-            password_confirmation: 'NuevaPassword1!',
         );
 
         $status = $action->update($data);
 
-        expect($status)->toBe(AuthErrorCode::PasswordResetSuccess->value);
+        expect($status)->toBe(AuthSuccessCode::PasswordResetSuccess->value);
         Event::assertDispatched(PasswordReset::class);
     });
 
@@ -93,7 +93,6 @@ describe('ResetPasswordAction', function () {
             token: $token,
             email: 'user@example.com',
             password: 'NuevaPassword1!',
-            password_confirmation: 'NuevaPassword1!',
         );
 
         $action->update($data);
@@ -110,7 +109,6 @@ describe('ResetPasswordAction', function () {
             token: $token,
             email: 'user@example.com',
             password: 'NuevaPassword1!',
-            password_confirmation: 'NuevaPassword1!',
         );
 
         $action->update($data);
@@ -126,7 +124,6 @@ describe('ResetPasswordAction', function () {
             token: 'token-invalido',
             email: 'user@example.com',
             password: 'NuevaPassword1!',
-            password_confirmation: 'NuevaPassword1!',
         );
 
         try {
@@ -148,7 +145,6 @@ describe('ResetPasswordAction', function () {
             token: $token,
             email: 'user@example.com',
             password: 'NuevaPassword1!',
-            password_confirmation: 'NuevaPassword1!',
         );
 
         $action->update($data);

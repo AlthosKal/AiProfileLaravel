@@ -13,7 +13,6 @@ class CircuitBreakerOpenException extends BaseException
     ) {
         parent::__construct(
             errorCode: SharedErrorCode::CircuitBreakerOpen,
-            message: "Cortocircuito ABIERTO para el servicio '$serviceName'. Fallos: $failureCount. Reintentar después de {$recoveryTimeout}s.",
         );
     }
 }

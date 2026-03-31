@@ -37,7 +37,7 @@ describe('primer lockout', function () {
             ->and($result->captcha_enabled)->toBeTrue()
             ->and($result->duration)->toBe(60)
             ->and($result->retry_after)->toBe(60)
-            ->and($result->errorCode)->toBe(AuthErrorCode::FirstLockoutFired->value);
+            ->and($result->errorCode)->toBe(AuthErrorCode::FirstLockoutFired);
     });
 
     it('activa el captcha en cache', function () {
@@ -68,7 +68,7 @@ describe('segundo lockout', function () {
             ->and($result->captcha_enabled)->toBeTrue()
             ->and($result->duration)->toBe(3600)
             ->and($result->retry_after)->toBe(3600)
-            ->and($result->errorCode)->toBe(AuthErrorCode::SecondLockoutFired->value);
+            ->and($result->errorCode)->toBe(AuthErrorCode::SecondLockoutFired);
     });
 
     it('actualiza el timestamp de expiración en cache a 1 hora', function () {
@@ -97,8 +97,7 @@ describe('tercer lockout (bloqueo permanente)', function () {
         expect($result->permanent)->toBeTrue()
             ->and($result->count)->toBe(3)
             ->and($result->retry_after)->toBeNull()
-            ->and($result->errorCode)->toBe(AuthErrorCode::ThirdLockoutFired->value)
-            ->and($result->user_security_event)->toBeInstanceOf(UserSecurityEvent::class);
+            ->and($result->errorCode)->toBe(AuthErrorCode::ThirdLockoutFired);
 
         expect($user->fresh()->security_status)->toBe(SecurityStatusEnum::PERMANENTLY_BLOCKED);
     });

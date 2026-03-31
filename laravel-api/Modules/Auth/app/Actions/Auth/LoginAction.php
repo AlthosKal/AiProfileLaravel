@@ -45,7 +45,6 @@ readonly class LoginAction
      * @param  string  $ip  IP del cliente para generar la throttle key
      *
      * @throws ValidationException Si las credenciales son inválidas o la cuenta está bloqueada
-     * @throws LoginThrottledException Si se alcanzó el límite de intentos (HTTP 429)
      * @throws Throwable
      */
     public function login(LoginData $data, string $ip): LoginResponseData

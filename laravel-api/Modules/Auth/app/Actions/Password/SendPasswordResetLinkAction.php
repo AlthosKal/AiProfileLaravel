@@ -6,6 +6,7 @@ use Illuminate\Auth\Events\PasswordResetLinkSent;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Password;
 use Modules\Auth\Enums\AuthErrorCode;
+use Modules\Auth\Enums\AuthSuccessCode;
 use Modules\Auth\Enums\PasswordResetReason;
 use Modules\Auth\Http\Data\PasswordResetLinkData;
 use Modules\Auth\Mail\ResetPasswordMail;
@@ -51,7 +52,7 @@ readonly class SendPasswordResetLinkAction
         // (e.g. passwords.throttled, passwords.user). En ambos casos se retorna la
         // misma clave semántica al frontend para no revelar si el email está registrado.
         return $status === Password::RESET_LINK_SENT
-            ? AuthErrorCode::PasswordResetLinkSent->value
+            ? AuthSuccessCode::PasswordResetLinkSent->value
             : AuthErrorCode::PasswordResetLinkFailed->value;
     }
 

@@ -52,26 +52,21 @@ class RecaptchaVerificationAction
                 'secret' => config('recaptchav3.secret'),
                 'response' => $token,
             ])
-            ->throw(fn () => throw new RecaptchaVerificationException(
-                message: 'Google reCAPTCHA API no disponible',
-            ))
+            ->throw(function () {
+                Log::error('Google reCAPTCHA API no disponible');
+                throw new RecaptchaVerificationException;
+            })
             ->json();
 
-        throw_if(
-            ! ($data['success'] ?? false),
-            new RecaptchaVerificationException(
-                message: 'Verificación de reCAPTCHA rechazada por Google',
-                details: ['error_codes' => $data['error-codes'] ?? []],
-            )
-        );
+        if (! ($data['success'] ?? false)) {
+            Log::warning('Verificación de reCAPTCHA rechazada por Google', ['error_codes' => $data['error-codes'] ?? []]);
+            throw new RecaptchaVerificationException(details: ['error_codes' => $data['error-codes'] ?? []]);
+        }
 
-        throw_if(
-            ($data['action'] ?? '') !== $action,
-            new RecaptchaVerificationException(
-                message: 'Acción de reCAPTCHA no coincide',
-                details: ['expected' => $action, 'received' => $data['action'] ?? ''],
-            )
-        );
+        if (($data['action'] ?? '') !== $action) {
+            Log::warning('Acción de reCAPTCHA no coincide', ['expected' => $action, 'received' => $data['action'] ?? '']);
+            throw new RecaptchaVerificationException(details: ['expected' => $action, 'received' => $data['action'] ?? '']);
+        }
 
         $score = $data['score'] ?? 0.0;
 

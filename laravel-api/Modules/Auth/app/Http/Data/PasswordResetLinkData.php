@@ -12,10 +12,13 @@ class PasswordResetLinkData extends Data
     public function __construct(
         #[Rule('required|email|max:254')]
         public string $email,
-        #[Rule(['required', 'string', new RecaptchaV3Rule('forgot_password')])]
+        #[Rule(['nullable', 'string', new RecaptchaV3Rule('forgot_password')])]
         public ?string $recaptcha_token
     ) {}
 
+    /**
+     * @return array<string, string>
+     */
     public static function messages(): array
     {
         return [

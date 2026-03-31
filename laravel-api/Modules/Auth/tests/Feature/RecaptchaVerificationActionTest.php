@@ -239,19 +239,16 @@ describe('RecaptchaV3Rule', function () {
 describe('RecaptchaVerificationException', function () {
     it('tiene el código HTTP 503', function () {
         $exception = new RecaptchaVerificationException(
-            message: 'Error de verificación',
             details: ['token' => RECAPTCHA_TOKEN],
         );
 
         expect($exception->getCode())->toBe(503)
-            ->and($exception->getMessage())->toBe('Error de verificación')
             ->and($exception->getDetails())->toBe(['token' => RECAPTCHA_TOKEN])
             ->and($exception->getErrorCode())->toBe('recaptcha_verification_failed');
     });
 
     it('render retorna JSON con la estructura correcta', function () {
         $exception = new RecaptchaVerificationException(
-            message: 'Error de verificación',
             details: ['reason' => 'timeout'],
         );
 
@@ -259,9 +256,9 @@ describe('RecaptchaVerificationException', function () {
 
         expect($response->getStatusCode())->toBe(503)
             ->and($response->getData(assoc: true))->toMatchArray([
-                'error' => 'recaptcha_verification_failed',
-                'message' => 'Error de verificación',
-                'details' => ['reason' => 'timeout'],
+                'success' => false,
+                'status' => 'recaptcha_verification_failed',
+                'data' => ['reason' => 'timeout'],
             ]);
     });
 });

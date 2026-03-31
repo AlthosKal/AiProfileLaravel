@@ -19,7 +19,7 @@ trait HasPasswordExpiration
      */
     public function isPasswordExists(): bool
     {
-        return $this->password !== null;
+        return ! empty($this->password);
     }
 
     /**

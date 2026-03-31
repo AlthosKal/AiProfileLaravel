@@ -77,7 +77,7 @@ readonly class LockoutStateAction
         return new LockoutStateData(
             permanent: false,
             count: $count,
-            errorCode: AuthErrorCode::FirstLockoutFired->value,
+            errorCode: AuthErrorCode::FirstLockoutFired,
             captcha_enabled: true,
             duration: $duration,
             retry_after: $duration,
@@ -104,7 +104,7 @@ readonly class LockoutStateAction
         return new LockoutStateData(
             permanent: false,
             count: $count,
-            errorCode: AuthErrorCode::SecondLockoutFired->value,
+            errorCode: AuthErrorCode::SecondLockoutFired,
             captcha_enabled: true,
             duration: $duration,
             retry_after: $duration,
@@ -146,19 +146,16 @@ readonly class LockoutStateAction
     {
         $user = User::where('email', $email)->first();
 
-        throw_if(
-            ! $user,
-            new UserNotFoundForLockoutException(
-                message: "Usuario $email no encontrado",
-                details: ['email' => $email, 'count' => $count],
-            )
-        );
+        if (! $user) {
+            Log::error("Usuario $email no encontrado al intentar aplicar lockout permanente.", ['count' => $count]);
+            throw new UserNotFoundForLockoutException(details: ['email' => $email, 'count' => $count]);
+        }
 
         // Marcar el usuario como bloqueado permanentemente en la tabla users
         $user->update(['security_status' => SecurityStatusEnum::PERMANENTLY_BLOCKED->value]);
 
         // Crear el registro de auditoría en user_security_events antes de limpiar el cache
-        $securityEvent = UserSecurityEvent::logPermanentBlock(
+        UserSecurityEvent::logPermanentBlock(
             user: $user,
             ipAddress: $ip,
             reason: "Bloqueo permanente automático al llegar a $count lockouts disparados",
@@ -173,8 +170,7 @@ readonly class LockoutStateAction
         return new LockoutStateData(
             permanent: true,
             count: $count,
-            errorCode: AuthErrorCode::ThirdLockoutFired->value,
-            user_security_event: $securityEvent,
+            errorCode: AuthErrorCode::ThirdLockoutFired,
         );
     }
 }
