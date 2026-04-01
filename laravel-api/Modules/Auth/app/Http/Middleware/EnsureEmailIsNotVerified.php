@@ -9,7 +9,7 @@ use Modules\Shared\Traits\JsonResponseTrait;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 /**
- * Middleware que cortocircuita rutas de verificación cuando el email ya está verificado.
+ * MiddlewaresFramework que cortocircuita rutas de verificación cuando el email ya está verificado.
  *
  * Retorna 200 con la clave semántica `EmailAlreadyVerified` en lugar de continuar
  * al controlador, evitando reenvíos innecesarios y marcados duplicados.

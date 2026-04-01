@@ -2,7 +2,6 @@
 
 namespace Modules\Shared\Providers;
 
-use Illuminate\Console\Scheduling\Schedule;
 use Nwidart\Modules\Support\ModuleServiceProvider;
 
 class SharedServiceProvider extends ModuleServiceProvider
@@ -17,17 +16,17 @@ class SharedServiceProvider extends ModuleServiceProvider
      */
     protected string $nameLower = 'shared';
 
-    /**
-     * Command classes to register.
-     *
-     * @var string[]
-     */
+    // /**
+    //  * Command classes to register.
+    //  *
+    //  * @var string[]
+    //  */
     // protected array $commands = [];
+
+    public function boot(): void {}
 
     /**
      * Provider classes to register.
-     *
-     * @var string[]
      */
     protected array $providers = [
         EventServiceProvider::class,

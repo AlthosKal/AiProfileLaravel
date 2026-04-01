@@ -8,31 +8,42 @@ use Modules\Auth\Http\Controllers\PasswordResetLinkController;
 use Modules\Auth\Http\Controllers\RegisteredUserController;
 use Modules\Auth\Http\Controllers\VerifyEmailController;
 use Modules\Auth\Http\Middleware\EnsureEmailIsNotVerified;
+use Modules\Shared\Enums\MiddlewaresFramework;
+use Modules\Shared\Security\RateLimiterForApp;
 
-Route::post('/register', [RegisteredUserController::class, 'store'])
-    ->middleware('guest')
-    ->name('register');
+Route::prefix('v1')->group(function () {
+    Route::middleware(MiddlewaresFramework::GUEST->value)->group(function () {
+        Route::post('/register', [RegisteredUserController::class, 'store'])
+            ->middleware(RateLimiterForApp::middleware(name: 'register_user', byEmail: true))
+            ->name('register');
 
-Route::post('/login', [AuthenticatedSessionController::class, 'store'])
-    ->middleware('guest')
-    ->name('login');
+        Route::post('/login', [AuthenticatedSessionController::class, 'store'])
+            ->middleware(RateLimiterForApp::middleware(name: 'login', byEmail: true))
+            ->name('login');
 
-Route::post('/forgot-password', [PasswordResetLinkController::class, 'store'])
-    ->middleware('guest')
-    ->name('password.email');
+        Route::post('/forgot-password', [PasswordResetLinkController::class, 'store'])
+            ->middleware(RateLimiterForApp::middleware(name: 'forgot_password', byEmail: true))
+            ->name('password.email');
 
-Route::post('/reset-password', [NewPasswordController::class, 'store'])
-    ->middleware('guest')
-    ->name('password.store');
+        Route::post('/reset-password', [NewPasswordController::class, 'store'])
+            ->middleware(RateLimiterForApp::middleware(name: 'reset_password', byEmail: true))
+            ->name('password.store');
+    });
 
-Route::get('/verify-email/{id}/{hash}', VerifyEmailController::class)
-    ->middleware(['auth:sanctum', 'signed', 'throttle:6,1', EnsureEmailIsNotVerified::class])
-    ->name('verification.verify');
+    Route::middleware(MiddlewaresFramework::with(MiddlewaresFramework::AUTH, 'sanctum'))->group(function () {
+        Route::get('/verify-email/{id}/{hash}', VerifyEmailController::class)
+            ->middleware([
+                MiddlewaresFramework::SIGNED->value,
+                EnsureEmailIsNotVerified::class,
+                RateLimiterForApp::middleware(name: 'verify_email'),
+            ])
+            ->name('verification.verify');
 
-Route::post('/email/verification-notification', [EmailVerificationNotificationController::class, 'store'])
-    ->middleware(['auth:sanctum', 'throttle:6,1', EnsureEmailIsNotVerified::class])
-    ->name('verification.send');
+        Route::post('/email/verification-notification', [EmailVerificationNotificationController::class, 'store'])
+            ->middleware([EnsureEmailIsNotVerified::class, RateLimiterForApp::middleware(name: 'resend_verification')])
+            ->name('verification.send');
 
-Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])
-    ->middleware('auth:sanctum')
-    ->name('logout');
+        Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])
+            ->name('logout');
+    });
+});

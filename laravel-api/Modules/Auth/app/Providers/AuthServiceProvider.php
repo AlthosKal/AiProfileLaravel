@@ -2,8 +2,8 @@
 
 namespace Modules\Auth\Providers;
 
-use Illuminate\Console\Scheduling\Schedule;
 use Modules\Auth\Interfaces\LockoutStateStoreInterface;
+use Modules\Auth\Security\PasswordSecurity;
 use Modules\Auth\Stores\LockoutStateStore;
 use Nwidart\Modules\Support\ModuleServiceProvider;
 
@@ -19,7 +19,10 @@ class AuthServiceProvider extends ModuleServiceProvider
      */
     protected string $nameLower = 'auth';
 
-    public function boot(): void {}
+    public function boot(): void
+    {
+        PasswordSecurity::default();
+    }
     /**
      * Command classes to register.
      *

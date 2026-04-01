@@ -118,7 +118,7 @@ return [
 
         /*
         |--------------------------------------------------------------------------
-        | IP-Based Rate Limiting (Middleware Layer)
+        | IP-Based Rate Limiting (MiddlewaresFramework Layer)
         |--------------------------------------------------------------------------
         |
         | Límite por dirección IP para prevenir ataques de fuerza bruta desde
@@ -138,7 +138,7 @@ return [
 
         /*
         |--------------------------------------------------------------------------
-        | Email-Based Rate Limiting (Middleware Layer)
+        | Email-Based Rate Limiting (MiddlewaresFramework Layer)
         |--------------------------------------------------------------------------
         |
         | Límite por email para prevenir ataques distribuidos sobre una cuenta
@@ -155,32 +155,30 @@ return [
             'max_attempts' => (int) env('LOGIN_RATE_LIMIT_EMAIL_MAX_ATTEMPTS', 10),
             'decay_minutes' => (int) env('LOGIN_RATE_LIMIT_EMAIL_DECAY_MINUTES', 60),
         ],
-
-        /*
-        |--------------------------------------------------------------------------
-        | Safety Net Rate Limiting (Middleware Layer)
-        |--------------------------------------------------------------------------
-        |
-        | Protección adicional contra ataques DDoS MUY agresivos con límites
-        | extremadamente altos que NO interfieren con el flujo normal del sistema.
-        |
-        | Este es un "safety net" (red de seguridad) como última línea de defensa
-        | contra ataques de más de 100+ req/seg desde la misma IP.
-        |
-        | - max_attempts: Número muy alto de intentos (30+ por minuto)
-        | - decay_minutes: Tiempo en minutos para resetear el contador
-        |
-        | Response: HTTP 422 (Validation Error) con mensaje personalizado
-        | Bypasseable: Sí (cambiando IP)
-        |
-        */
-        'safety_net' => [
-            'max_attempts' => (int) env('SAFETY_NET_MAX_ATTEMPTS', 30),
-            'decay_minutes' => (int) env('SAFETY_NET_DECAY_MINUTES', 1),
-        ],
-
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Safety Net Rate Limiting (MiddlewaresFramework Layer)
+    |--------------------------------------------------------------------------
+    |
+    | Protección adicional contra ataques DDoS MUY agresivos con límites
+    | extremadamente altos que NO interfieren con el flujo normal del sistema.
+    |
+    | Este es un "safety net" (red de seguridad) como última línea de defensa
+    | a nivel de software y de la app, contra ataques de más de 100+ req/seg desde la misma IP.
+    |
+    | - max_attempts: Número muy alto de intentos (30+ por minuto)
+    | - decay_minutes: Tiempo en minutos para resetear el contador
+    |
+    | Response: HTTP 422 (Validation Error) con mensaje personalizado
+    | Bypasseable: Sí (cambiando IP)
+    |
+    */
+    'safety_net' => [
+        'max_attempts' => (int) env('SAFETY_NET_MAX_ATTEMPTS', 30),
+        'decay_minutes' => (int) env('SAFETY_NET_DECAY_MINUTES', 1),
+    ],
     /*
     |--------------------------------------------------------------------------
     | Password Security Configuration

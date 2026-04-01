@@ -10,7 +10,7 @@ use Modules\Shared\Traits\JsonResponseTrait;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 /**
- * Middleware que protege rutas que requieren email verificado.
+ * MiddlewaresFramework que protege rutas que requieren email verificado.
  *
  * Si el usuario no está autenticado o no ha verificado su email,
  * retorna 409 con la clave semántica `EmailVerificationRequired`

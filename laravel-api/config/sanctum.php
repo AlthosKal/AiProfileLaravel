@@ -69,7 +69,7 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Sanctum Middleware
+    | Sanctum MiddlewaresFramework
     |--------------------------------------------------------------------------
     |
     | When authenticating your first-party SPA with Sanctum you may need to
