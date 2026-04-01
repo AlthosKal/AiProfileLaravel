@@ -10,6 +10,9 @@ enum AuthSuccessCode: string
     // Login
     case LoginSuccess = 'login_success';
 
+    // Register
+    case RegisterSuccess = 'register_success';
+
     // Logout
     case LogoutSuccess = 'logout_success';
 

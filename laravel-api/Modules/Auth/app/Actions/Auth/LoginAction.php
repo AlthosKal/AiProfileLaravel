@@ -106,6 +106,10 @@ readonly class LoginAction
         // 5. Login exitoso: limpiar Rate Limiter y todo el estado de lockout en cache.
         //    Esto restaura los intentos disponibles y desactiva el reCAPTCHA,
         //    permitiendo que el usuario vuelva a un flujo normal en su próxima sesión.
+        //    También se agrega auditoría del ultimo inicio de sesión.
+        $user->update([
+            'last_login_at' => now(),
+        ]);
         RateLimiter::clear($key);
         $this->lockoutStore->clearLockoutData($data->email);
 

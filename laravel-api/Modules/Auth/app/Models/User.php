@@ -148,6 +148,11 @@ class User extends Authenticatable implements MustVerifyEmail
         return 'email';
     }
 
+    public static function userAlreadyExists(string $email): bool
+    {
+        return static::where('email', $email)->exists();
+    }
+
     /**
      * Trae el historial de contraseñas del usuario.
      *

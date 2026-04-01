@@ -28,4 +28,10 @@ use Illuminate\Support\Carbon;
  * @mixin Eloquent
  */
 #[Fillable(['user_email', 'password'])]
-class PasswordHistory extends Model {}
+class PasswordHistory extends Model
+{
+    public function casts(): array
+    {
+        return ['password' => 'hashed'];
+    }
+}

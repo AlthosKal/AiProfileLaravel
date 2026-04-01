@@ -8,10 +8,10 @@ use Illuminate\Translation\PotentiallyTranslatedString;
 use Modules\Auth\Enums\AuthErrorCode;
 use Modules\Auth\Models\User;
 
-readonly class NotInPasswordHistory implements ValidationRule
+readonly class UserAlreadyExistsRule implements ValidationRule
 {
     public function __construct(
-        private string $email,
+        private ?string $email,
     ) {}
 
     /**
@@ -19,10 +19,8 @@ readonly class NotInPasswordHistory implements ValidationRule
      */
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
-        $user = User::where('email', $this->email)->first();
-
-        if ($user->verifyPasswordHistories($value)) {
-            $fail(AuthErrorCode::PasswordInHistory->value);
+        if (User::userAlreadyExists($this->email)) {
+            $fail(AuthErrorCode::UserAlreadyExists->value);
         }
     }
 }

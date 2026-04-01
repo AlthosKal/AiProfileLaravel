@@ -3,7 +3,7 @@
 namespace Modules\Auth\Http\Data;
 
 use Modules\Auth\Enums\AuthErrorCode;
-use Modules\Auth\Rules\NotInPasswordHistory;
+use Modules\Auth\Rules\NotInPasswordHistoryRule;
 use Modules\Auth\Rules\RecaptchaV3Rule;
 use Spatie\LaravelData\Attributes\Validation\Password;
 use Spatie\LaravelData\Attributes\Validation\Rule;
@@ -39,7 +39,7 @@ class ResetPasswordData extends Data
         $email = request()->input('email');
 
         return [
-            'password' => ['required', 'confirmed', new NotInPasswordHistory($email)],
+            'password' => ['required', 'confirmed', new NotInPasswordHistoryRule($email)],
         ];
     }
 

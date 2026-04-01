@@ -3,37 +3,32 @@
 namespace Modules\Auth\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Auth\Events\Registered;
-use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Response;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\Rules;
-use Modules\Auth\Models\User;
+use Modules\Auth\Actions\Auth\RegisterUserAction;
+use Modules\Auth\Enums\AuthSuccessCode;
+use Modules\Auth\Http\Data\RegisterUserData;
 
 class RegisteredUserController extends Controller
 {
+    public function __construct(
+        private readonly RegisterUserAction $action,
+    ) {}
+
     /**
-     * Handle an incoming registration request.
+     * Registrar un nuevo usuario en el sistema.
+     *
+     * La validación ocurre automáticamente al resolver RegisterUserData como
+     * parámetro del método — si falla, Spatie Data lanza una ValidationException
+     * antes de llegar a este método.
+     *
+     * Retorna 201 Created sin datos adicionales: el usuario debe verificar su
+     * email antes de poder autenticarse.
      */
-    public function store(Request $request): Response
+    public function store(RegisterUserData $data): JsonResponse
     {
-        $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
-            'password' => ['required', 'confirmed', Rules\Password::defaults()],
-        ]);
+        $this->action->register($data);
 
-        $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->string('password')),
-        ]);
-
-        event(new Registered($user));
-
-        Auth::login($user);
-
-        return response()->noContent();
+        return $this->success(status: AuthSuccessCode::RegisterSuccess->value, httpStatus: Response::HTTP_CREATED);
     }
 }

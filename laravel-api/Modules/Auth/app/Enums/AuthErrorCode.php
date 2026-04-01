@@ -7,10 +7,29 @@ namespace Modules\Auth\Enums;
  */
 enum AuthErrorCode: string
 {
+    // User
+    case UserAlreadyExists = 'user_al_ready_exists';
+
+    // Identification Type
+    case IdentificationTypeInvalid = 'identification_type_invalid';
+
     // reCAPTCHA
     case RecaptchaVerificationFailed = 'recaptcha_verification_failed';
     case CaptchaVerificationRequired = 'captcha_verification_required';
     case CaptchaVerificationFailed = 'captcha_verification_failed';
+
+    // Register
+    case NameRequired = 'name_required';
+    case NameString = 'name_string';
+    case NameTooLong = 'name_too_long';
+    case PasswordString = 'password_string';
+    case PasswordTooShort = 'password_too_short';
+    case IdentificationNumberRequired = 'identification_number_required';
+    case IdentificationNumberInteger = 'identification_number_integer';
+    case IdentificationNumberInvalidLength = 'identification_number_invalid_length';
+    case IdentificationTypeRequired = 'identification_type_required';
+    case IdentificationTypeString = 'identification_type_string';
+    case IdentificationTypeTooLong = 'identification_type_too_long';
 
     // Login
     case LoginFailed = 'auth_failed';
