@@ -6,13 +6,40 @@ services:
     ports:
       - "5432:5432"
     env_file:
-      - .env.docker.postgresql
+      - .env.docker.api.postgresql
     volumes:
       - laravel_api_postgresql_data:/var/lib/postgresql/data
     networks:
       - laravel_api_network
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U laravel-api-user -d laravel-api-db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5  
+      start_period: 30s
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '0.5'
+          memory: 1G
+    # 7. Base de datos PostgreSQL para Laravel
+  laravel-mcp-db-postgresql:
+    image: pgvector/pgvector:pg17
+    container_name: laravel-mcp-db-postgresql
+    ports:
+      - "5433:5432"
+    env_file:
+      - .env.docker.mcp.postgresql
+    volumes:
+      - laravel_mcp_postgresql_data:/var/lib/postgresql/data
+    networks:
+      - laravel_api_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U laravel-mcp-user -d laravel-mcp-db"]
       interval: 10s
       timeout: 5s
       retries: 5  
@@ -86,6 +113,7 @@ networks:
 volumes:
   laravel_api_redis_data:
   laravel_api_postgresql_data:
+  laravel_mcp_postgresql_data:
   laravel_api_logs:
     # Named volume para logs compartidos entre todas las réplicas
     # Permite que LogViewer vea logs de todos los contenedores

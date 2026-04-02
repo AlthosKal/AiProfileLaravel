@@ -1,4 +1,5 @@
 {
     "Auth": true,
-    "Shared": true
+    "Shared": true,
+    "McpClient": true
 }
