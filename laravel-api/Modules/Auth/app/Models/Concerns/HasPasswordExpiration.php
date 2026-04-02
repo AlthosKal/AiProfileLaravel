@@ -26,6 +26,20 @@ trait HasPasswordExpiration
     }
 
     /**
+     * Obtener la fecha en la cual se hizo el último cambio de contraseña
+     */
+    public function getPasswordTimeExists(): Carbon
+    {
+        $expirationDays = config('auth.password_expiration_days', 30);
+
+        if (! $this->password_changed_at) {
+            return now()->addDays($expirationDays);
+        }
+
+        return $this->password_changed_at->addDays($expirationDays);
+    }
+
+    /**
      * Verificar si la contraseña actual ya venció.
      *
      * Si nunca se ha cambiado la contraseña (`password_changed_at` es null),
@@ -33,13 +47,7 @@ trait HasPasswordExpiration
      */
     public function hasPasswordExpired(): bool
     {
-        if (! $this->password_changed_at) {
-            return false;
-        }
-
-        $expirationDays = config('auth.password_expiration_days', 30);
-
-        return $this->password_changed_at->addDays($expirationDays)->isPast();
+        return $this->getPasswordTimeExists()->isPast();
     }
 
     /**
@@ -50,16 +58,19 @@ trait HasPasswordExpiration
      */
     public function getDaysUntilPasswordExpires(): int
     {
-        $expirationDays = config('auth.password_expiration_days', 30);
-
-        if (! $this->password_changed_at) {
-            return $expirationDays;
-        }
-
-        $expirationDate = $this->password_changed_at->addDays($expirationDays);
+        $expirationDate = $this->getPasswordTimeExists();
 
         // Cast explícito a int para evitar warning de conversión implícita
         return (int) max(0, now()->diffInDays($expirationDate));
+
+    }
+
+    public function isPasswordAboutToExpire(): bool
+    {
+        $warningDays = config('auth.password_expiration_warning_days', 5);
+        $daysLeft = $this->getDaysUntilPasswordExpires();
+
+        return $daysLeft > 0 && $daysLeft <= $warningDays;
     }
 
     /**

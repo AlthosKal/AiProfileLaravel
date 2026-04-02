@@ -10,9 +10,10 @@ use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Modules\Auth\Enums\AuthErrorCode;
 use Modules\Auth\Exceptions\LoginThrottledException;
+use Modules\Auth\Helpers\CheckAccountBlockStatusHelper;
 use Modules\Auth\Http\Data\LoginData;
 use Modules\Auth\Http\Data\LoginResponseData;
-use Modules\Auth\Interfaces\LockoutStateStoreInterface;
+use Modules\Auth\Interfaces\Auth\LockoutStateStoreInterface;
 use Modules\Auth\Models\User;
 use Throwable;
 
@@ -36,6 +37,7 @@ readonly class LoginAction
     public function __construct(
         private LockoutStateStoreInterface $lockoutStore,
         private LockoutStateAction $lockoutStateAction,
+        private CheckAccountBlockStatusHelper $statusHelper,
     ) {}
 
     /**
@@ -56,7 +58,7 @@ readonly class LoginAction
         // 1. Verificar bloqueos de la cuenta antes de cualquier otra validación.
         //    Si la cuenta está bloqueada se rechaza inmediatamente sin consumir
         //    intentos del Rate Limiter ni revelar si la contraseña es correcta.
-        $this->checkAccountBlockStatus($data->email, $ip);
+        $this->statusHelper->check($data->email);
 
         // 2. Verificar si reCAPTCHA es obligatorio para este email.
         //    Se activa automáticamente tras el primer lockout y persiste 24 horas.
@@ -107,13 +109,18 @@ readonly class LoginAction
         //    Esto restaura los intentos disponibles y desactiva el reCAPTCHA,
         //    permitiendo que el usuario vuelva a un flujo normal en su próxima sesión.
         //    También se agrega auditoría del ultimo inicio de sesión.
-        $user->update([
-            'last_login_at' => now(),
-        ]);
+        $user->userIsLogin($user->email);
         RateLimiter::clear($key);
         $this->lockoutStore->clearLockoutData($data->email);
 
-        Log::info("Login exitoso para $data->email con ip $ip");
+        activity('Inicio de sesión del Usuario')
+            ->performedOn($user)
+            ->causedBy($user)
+            ->withProperties([
+                'name' => $user->name,
+                'email' => $user->email,
+            ])
+            ->log("Usuario $user->name, con correo $user->email, con número de identificación $user->identification_number y con tipo de identificación $user->identification_type inició sesión correctamente el $user->last_login_at desde la ip $ip");
 
         // 6. Crear el token Sanctum y construir las flags de estado post-login.
         //    El plainTextToken solo está disponible en este momento — en DB se guarda
@@ -164,36 +171,6 @@ readonly class LoginAction
     }
 
     /**
-     * Verificar si la cuenta del email provisto tiene algún tipo de bloqueo activo.
-     *
-     * Se hace una sola query para obtener el usuario y luego se evalúan ambos
-     * estados en orden de severidad: temporal primero, permanente después.
-     * Si el usuario no existe aún, no se lanza excepción (evita enumeración de cuentas).
-     *
-     * @throws ValidationException
-     */
-    private function checkAccountBlockStatus(string $email, string $ip): void
-    {
-        $user = User::where('email', $email)->first();
-
-        if ($user?->isTemporarilyBlocked()) {
-            Log::warning("Login rechazado para $email con ip $ip: cuenta bloqueada temporalmente.");
-
-            throw ValidationException::withMessages([
-                'email' => AuthErrorCode::SecondLockoutFired->value,
-            ]);
-        }
-
-        if ($user?->isPermanentlyBlocked()) {
-            Log::warning("Login rechazado para $email con ip $ip: cuenta bloqueada permanentemente.");
-
-            throw ValidationException::withMessages([
-                'email' => AuthErrorCode::ThirdLockoutFired->value,
-            ]);
-        }
-    }
-
-    /**
      * Verificar si reCAPTCHA es obligatorio y si el token fue provisto.
      *
      * reCAPTCHA se activa tras el primer lockout y permanece activo 24 horas.
@@ -235,10 +212,7 @@ readonly class LoginAction
             return false;
         }
 
-        $daysLeft = $user->getDaysUntilPasswordExpires();
-        $warningDays = config('auth.password_expiration_warning_days', 5);
-
-        return $daysLeft > 0 && $daysLeft <= $warningDays;
+        return $user->isPasswordAboutToExpire();
     }
 
     /**

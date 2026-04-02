@@ -2,7 +2,10 @@
 
 namespace Modules\Auth\Providers;
 
-use Modules\Auth\Interfaces\LockoutStateStoreInterface;
+use Modules\Auth\Actions\OAuth\Google\GoogleOAuthAction;
+use Modules\Auth\Interfaces\Auth\LockoutStateStoreInterface;
+use Modules\Auth\Interfaces\OAuth\CallbackStrategyInterface;
+use Modules\Auth\Interfaces\OAuth\RedirectStrategyInterface;
 use Modules\Auth\Security\PasswordSecurity;
 use Modules\Auth\Stores\LockoutStateStore;
 use Nwidart\Modules\Support\ModuleServiceProvider;
@@ -40,11 +43,50 @@ class AuthServiceProvider extends ModuleServiceProvider
         RouteServiceProvider::class,
     ];
 
+    /**
+     * Mapa de proveedores OAuth soportados.
+     *
+     * Para agregar un nuevo proveedor (ej. Outlook), basta con añadir
+     * la clave del parámetro de ruta y la clase de acción correspondiente.
+     *
+     * @var array<string, class-string>
+     */
+    private array $oauthProviders = [
+        'google' => GoogleOAuthAction::class,
+    ];
+
     public function register(): void
     {
         parent::register();
 
         $this->app->bind(LockoutStateStoreInterface::class, LockoutStateStore::class);
+
+        $this->bindOAuthStrategies();
+    }
+
+    /**
+     * Registrar el binding de las estrategias OAuth según el parámetro {provider} de la ruta.
+     *
+     * Al resolver RedirectStrategyInterface o CallbackStrategyInterface, el contenedor
+     * lee el parámetro de ruta para determinar qué implementación concreta usar.
+     * GoogleOAuthAction implementa ambas interfaces, por lo que se resuelve una
+     * sola instancia compartida para las dos.
+     */
+    private function bindOAuthStrategies(): void
+    {
+        $resolver = function () {
+            $provider = request()->route('provider');
+            $actionClass = $this->oauthProviders[$provider] ?? null;
+
+            if (! $actionClass) {
+                abort(404);
+            }
+
+            return $this->app->make($actionClass);
+        };
+
+        $this->app->bind(RedirectStrategyInterface::class, $resolver);
+        $this->app->bind(CallbackStrategyInterface::class, $resolver);
     }
 
     /**

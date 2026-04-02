@@ -92,10 +92,6 @@ use Spatie\Activitylog\Traits\LogsActivity;
     'email',
     'email_verified_at',
     'password',
-    'two_factor_secret',
-    'two_factor_recovery_codes',
-    'is_two_factor_enabled',
-    'two_factor_confirmed_at',
     'google_auth_enabled',
     'password_changed_at',
     'identification_number',
@@ -134,8 +130,6 @@ class User extends Authenticatable implements MustVerifyEmail
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'password_changed_at' => 'datetime',
-            'is_two_factor_enabled' => 'boolean',
-            'two_factor_confirmed_at' => 'datetime',
             'google_auth_enabled' => 'boolean',
             'last_login_at' => 'datetime',
             'last_logout_at' => 'datetime',
@@ -151,6 +145,25 @@ class User extends Authenticatable implements MustVerifyEmail
     public static function userAlreadyExists(string $email): bool
     {
         return static::where('email', $email)->exists();
+    }
+
+    public function isGoogleAuthEnabled(string $email): bool
+    {
+        return self::query()->where('email', $email)->value('google_auth_enabled');
+    }
+
+    public function userIsLogin(string $email): void
+    {
+        self::query()->where('email', $email)->update([
+            'last_login_at' => now(),
+        ]);
+    }
+
+    public function userIsLogout(string $email): void
+    {
+        self::query()->where('email', $email)->update([
+            'last_logout_at' => now(),
+        ]);
     }
 
     /**

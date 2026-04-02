@@ -5,6 +5,7 @@ namespace Modules\Auth\Actions\Password;
 use Illuminate\Auth\Events\PasswordResetLinkSent;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Password;
+use Log;
 use Modules\Auth\Enums\AuthErrorCode;
 use Modules\Auth\Enums\AuthSuccessCode;
 use Modules\Auth\Enums\PasswordResetReason;
@@ -42,6 +43,7 @@ readonly class SendPasswordResetLinkAction
                 $resetUrl = $this->buildResetUrl($token, $user->email);
 
                 Mail::to($user->email)->send(new ResetPasswordMail($user, $resetUrl, $reason));
+                Log::info("Correo para recuperación de contraseña enviado a $user->email");
 
                 // El broker omite este evento cuando se usa el callback, se dispara manualmente
                 event(new PasswordResetLinkSent($user));
@@ -57,13 +59,12 @@ readonly class SendPasswordResetLinkAction
     }
 
     /**
-     * Construir la URL de reset usando la configuración del frontend.
+     * Construir la URL de reset apuntando al frontend configurado en `app.frontend_url`.
      *
-     * Delega en `createUrlUsing` registrado en AppServiceProvider si está definido,
-     * o usa la URL del frontend configurada directamente.
+     * El email se codifica con urlencode() para garantizar una query string válida.
      */
     private function buildResetUrl(string $token, string $email): string
     {
-        return config('app.frontend_url')."/password-reset/$token?email=$email";
+        return config('app.frontend_url')."/password-reset/$token?email=".urlencode($email);
     }
 }

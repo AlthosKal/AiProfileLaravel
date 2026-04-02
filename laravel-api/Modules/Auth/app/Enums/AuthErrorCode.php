@@ -9,6 +9,7 @@ enum AuthErrorCode: string
 {
     // User
     case UserAlreadyExists = 'user_al_ready_exists';
+    case UserNotFound = 'user_not_found';
 
     // Identification Type
     case IdentificationTypeInvalid = 'identification_type_invalid';
@@ -17,6 +18,9 @@ enum AuthErrorCode: string
     case RecaptchaVerificationFailed = 'recaptcha_verification_failed';
     case CaptchaVerificationRequired = 'captcha_verification_required';
     case CaptchaVerificationFailed = 'captcha_verification_failed';
+
+    // Google Auth
+    case GoogleAuthDisabled = 'google_auth_disabled';
 
     // Register
     case NameRequired = 'name_required';
@@ -45,6 +49,7 @@ enum AuthErrorCode: string
     case PasswordResetLinkFailed = 'password_reset_link_failed';
     case PasswordResetFailed = 'password_reset_failed';
     case PasswordInHistory = 'password_in_history';
+    case PasswordExpired = 'password_expired';
 
     // Validación de campos del Login
     case EmailRequired = 'email_required';

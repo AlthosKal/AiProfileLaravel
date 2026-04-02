@@ -8,7 +8,7 @@ use Modules\Auth\Enums\AuthErrorCode;
 use Modules\Auth\Enums\SecurityStatusEnum;
 use Modules\Auth\Exceptions\UserNotFoundForLockoutException;
 use Modules\Auth\Http\Data\LockoutStateData;
-use Modules\Auth\Interfaces\LockoutStateStoreInterface;
+use Modules\Auth\Interfaces\Auth\LockoutStateStoreInterface;
 use Modules\Auth\Models\User;
 use Modules\Auth\Models\UserSecurityEvent;
 use Throwable;

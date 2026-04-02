@@ -46,9 +46,7 @@ class AuthenticatedSessionController extends Controller
      */
     public function destroy(Request $request): Response
     {
-        $request->user()->update([
-            'last_logout_at' => now(),
-        ]);
+        $request->user()->userIsLogout($request->user()->email);
         $request->user()->currentAccessToken()->delete();
 
         return response()->noContent();

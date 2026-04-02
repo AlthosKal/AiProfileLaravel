@@ -48,11 +48,11 @@ it('validates required fields', function (string $field, string $errorCode) use 
         ->assertUnprocessable()
         ->assertJsonPath("errors.{$field}.0", $errorCode);
 })->with([
-    'name required'                  => ['name', AuthErrorCode::NameRequired->value],
-    'email required'                 => ['email', AuthErrorCode::EmailRequired->value],
-    'password required'              => ['password', AuthErrorCode::PasswordRequired->value],
+    'name required' => ['name', AuthErrorCode::NameRequired->value],
+    'email required' => ['email', AuthErrorCode::EmailRequired->value],
+    'password required' => ['password', AuthErrorCode::PasswordRequired->value],
     'identification_number required' => ['identification_number', AuthErrorCode::IdentificationNumberRequired->value],
-    'identification_type required'   => ['identification_type', AuthErrorCode::IdentificationTypeRequired->value],
+    'identification_type required' => ['identification_type', AuthErrorCode::IdentificationTypeRequired->value],
 ]);
 
 it('validates identification type must be a valid enum value', function () use ($validPayload) {

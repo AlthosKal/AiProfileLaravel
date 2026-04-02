@@ -11,6 +11,7 @@ use Modules\Auth\Actions\Auth\LoginAction;
 use Modules\Auth\Enums\AuthErrorCode;
 use Modules\Auth\Enums\SecurityStatusEnum;
 use Modules\Auth\Exceptions\LoginThrottledException;
+use Modules\Auth\Helpers\CheckAccountBlockStatusHelper;
 use Modules\Auth\Http\Data\LoginData;
 use Modules\Auth\Models\User;
 use Modules\Auth\Stores\LockoutStateStore;
@@ -36,7 +37,7 @@ function makeLoginAction(?LockoutStateStore $store = null): LoginAction
 {
     $store ??= new LockoutStateStore;
 
-    return new LoginAction($store, new LockoutStateAction($store));
+    return new LoginAction($store, new LockoutStateAction($store), new CheckAccountBlockStatusHelper);
 }
 
 /**

@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use Modules\Auth\Http\Controllers\AuthenticatedSessionController;
 use Modules\Auth\Http\Controllers\EmailVerificationNotificationController;
 use Modules\Auth\Http\Controllers\NewPasswordController;
+use Modules\Auth\Http\Controllers\OAuthController;
 use Modules\Auth\Http\Controllers\PasswordResetLinkController;
 use Modules\Auth\Http\Controllers\RegisteredUserController;
 use Modules\Auth\Http\Controllers\VerifyEmailController;
@@ -12,6 +13,11 @@ use Modules\Shared\Enums\MiddlewaresFramework;
 use Modules\Shared\Security\RateLimiterForApp;
 
 Route::prefix('v1')->group(function () {
+    Route::prefix('auth/{provider}')->group(function () {
+        Route::get('/redirect', [OAuthController::class, 'redirect'])->name('oauth.redirect');
+        Route::get('/callback', [OAuthController::class, 'callback'])->name('oauth.callback');
+    });
+
     Route::middleware(MiddlewaresFramework::GUEST->value)->group(function () {
         Route::post('/register', [RegisteredUserController::class, 'store'])
             ->middleware(RateLimiterForApp::middleware(name: 'register_user', byEmail: true))

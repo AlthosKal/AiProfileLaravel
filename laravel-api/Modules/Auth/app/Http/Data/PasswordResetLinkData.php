@@ -13,7 +13,7 @@ class PasswordResetLinkData extends Data
         #[Rule('required|email|max:254')]
         public string $email,
         #[Rule(['nullable', 'string', new RecaptchaV3Rule('forgot_password')])]
-        public ?string $recaptcha_token
+        public ?string $recaptcha_token = null,
     ) {}
 
     /**

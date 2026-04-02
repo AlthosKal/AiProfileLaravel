@@ -19,10 +19,6 @@ return new class extends Migration
             $table->string('email')->unique()->comment('Correo electrónico del usuario');
             $table->timestamp('email_verified_at')->nullable()->comment('Fecha en la que el usuario ha sido verificado');
             $table->string('password')->comment('Contraseña encriptada del usuario');
-            $table->text('two_factor_secret')->nullable()->comment('Almacena la clave secreta encriptada (TOTP) que se comparte con la app authenticator (Google Authenticator, Authy, etc.) para generar los códigos de 6 dígitos');
-            $table->text('two_factor_recovery_codes')->nullable()->comment('Almacena un array JSON de códigos de recuperación encriptados, usados cuando el usuario no tiene acceso a su app authenticator ');
-            $table->boolean('is_two_factor_enabled')->default(false)->comment('Indica si un usuario confirmó/activó el 2FA. Si es false, el 2FA está habilitado pero pendiente de confirmar');
-            $table->timestamp('two_factor_confirmed_at')->nullable()->comment('Fecha de cuando el usuario confirmó/activó el 2FA');
             $table->boolean('google_auth_enabled')->default(true)->comment('Indica si el usuario puede autenticarse con Google');
             $table->rememberToken()->comment('Token para mantener la sesión activa entre visitas ("Recordarme")');
             $table->timestamp('password_changed_at')->nullable()->comment('Ultima fecha donde se cambió la contraseña');

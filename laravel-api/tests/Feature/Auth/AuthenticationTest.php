@@ -3,33 +3,44 @@
 use Modules\Auth\Models\User;
 
 test('users can authenticate using the login screen', function () {
-    $user = User::factory()->create();
+    $password = 'Password1!';
+    $user = User::factory()->create(['password' => bcrypt($password)]);
 
-    $response = $this->post('/login', [
+    $response = $this->postJson('/api/v1/login', [
         'email' => $user->email,
-        'password' => 'password',
+        'password' => $password,
+        'device_name' => 'Test Device',
     ]);
 
-    $this->assertAuthenticated();
-    $response->assertNoContent();
+    $response->assertSuccessful();
+    $response->assertJsonPath('data.token', fn ($token) => ! empty($token));
 });
 
 test('users can not authenticate with invalid password', function () {
-    $user = User::factory()->create();
+    $user = User::factory()->create(['password' => bcrypt('Password1!')]);
 
-    $this->post('/login', [
+    $response = $this->postJson('/api/v1/login', [
         'email' => $user->email,
-        'password' => 'wrong-password',
+        'password' => 'Wrong-Password1!',
+        'device_name' => 'Test Device',
     ]);
 
-    $this->assertGuest();
+    $response->assertUnprocessable();
 });
 
 test('users can logout', function () {
-    $user = User::factory()->create();
+    $password = 'Password1!';
+    $user = User::factory()->create(['password' => bcrypt($password)]);
 
-    $response = $this->actingAs($user)->post('/logout');
+    $loginResponse = $this->postJson('/api/v1/login', [
+        'email' => $user->email,
+        'password' => $password,
+        'device_name' => 'Test Device',
+    ]);
 
-    $this->assertGuest();
+    $token = $loginResponse->json('data.token');
+
+    $response = $this->withToken($token)->postJson('/api/v1/logout');
+
     $response->assertNoContent();
 });

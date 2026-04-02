@@ -1,6 +1,6 @@
 <?php
 
-namespace Modules\Auth\Interfaces;
+namespace Modules\Auth\Interfaces\Auth;
 
 interface LockoutStateStoreInterface
 {

@@ -47,7 +47,7 @@ class RegisterUserAction
         // correo de verificación de email (MustVerifyEmail).
         event(new Registered($user));
 
-        activity('usuarios')
+        activity('Registro de Usuario')
             ->performedOn($user)
             ->causedBy($user)
             ->withProperties([

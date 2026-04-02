@@ -6,7 +6,7 @@ use Cache;
 use Log;
 use Modules\Auth\Enums\LockoutStatePrefixEnum;
 use Modules\Auth\Enums\LockoutStateTimeEnum;
-use Modules\Auth\Interfaces\LockoutStateStoreInterface;
+use Modules\Auth\Interfaces\Auth\LockoutStateStoreInterface;
 
 class LockoutStateStore implements LockoutStateStoreInterface
 {

@@ -1,37 +1,40 @@
 <?php
 
-use Illuminate\Auth\Notifications\ResetPassword;
-use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Mail;
+use Modules\Auth\Mail\ResetPasswordMail;
 use Modules\Auth\Models\User;
 
 test('reset password link can be requested', function () {
-    Notification::fake();
+    Mail::fake();
 
     $user = User::factory()->create();
 
-    $this->post('/forgot-password', ['email' => $user->email]);
+    $this->postJson('/api/v1/forgot-password', ['email' => $user->email])
+        ->assertSuccessful();
 
-    Notification::assertSentTo($user, ResetPassword::class);
+    Mail::assertSent(ResetPasswordMail::class, fn ($mail) => $mail->hasTo($user->email));
 });
 
 test('password can be reset with valid token', function () {
-    Notification::fake();
+    Mail::fake();
 
     $user = User::factory()->create();
 
-    $this->post('/forgot-password', ['email' => $user->email]);
+    $this->postJson('/api/v1/forgot-password', ['email' => $user->email]);
 
-    Notification::assertSentTo($user, ResetPassword::class, function (object $notification) use ($user) {
-        $response = $this->post('/reset-password', [
-            'token' => $notification->token,
+    Mail::assertSent(ResetPasswordMail::class, function (ResetPasswordMail $mail) use ($user) {
+        // Extraer el token de la URL de reset enviada en el mailable
+        preg_match('/password-reset\/([^?]+)/', $mail->resetUrl, $matches);
+        $token = $matches[1] ?? null;
+
+        $response = $this->postJson('/api/v1/reset-password', [
+            'token' => $token,
             'email' => $user->email,
-            'password' => 'password',
-            'password_confirmation' => 'password',
+            'password' => 'NewPassword1!',
+            'password_confirmation' => 'NewPassword1!',
         ]);
 
-        $response
-            ->assertSessionHasNoErrors()
-            ->assertStatus(200);
+        $response->assertSuccessful();
 
         return true;
     });
