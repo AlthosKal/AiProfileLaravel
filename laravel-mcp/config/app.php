@@ -56,6 +56,19 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Internal API URL (laravel-api)
+    |--------------------------------------------------------------------------
+    |
+    | URL base de laravel-api. Se usa para validar el claim `iss` del JWT
+    | interno — garantiza que el token fue emitido por laravel-api y no por
+    | otro sistema aunque tenga la misma clave pública.
+    |
+    */
+
+    'internal_api_url' => env('INTERNAL_API_URL', 'http://laravel-api'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Application Timezone
     |--------------------------------------------------------------------------
     |

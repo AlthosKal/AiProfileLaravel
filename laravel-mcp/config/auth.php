@@ -46,6 +46,9 @@ return [
             'driver' => 'passport',
             'provider' => 'users',
         ],
+        'jwt-gateway' => [
+            'driver' => 'jwt-gateway',
+        ],
     ],
 
     /*

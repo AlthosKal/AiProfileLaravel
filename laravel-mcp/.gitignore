@@ -10,6 +10,10 @@
 /.nova
 /.phpunit.cache
 /.vscode
+/.claude
+/.junie
+/.agents
+/.codex
 /.zed
 /auth.json
 /node_modules
@@ -19,7 +23,6 @@
 /storage/*.key
 /storage/pail
 /vendor
-_ide_helper.php
 Homestead.json
 Homestead.yaml
 Thumbs.db
@@ -27,3 +30,10 @@ Thumbs.db
 **/caddy
 frankenphp
 frankenphp-worker.php
+
+# Laravel IDE Helper
+_ide_helper.php
+_ide_helper_models.php
+.phpstorm.meta.php
+.mcp.json
+boost.json
