@@ -1,17 +1,17 @@
 <?php
 
-use App\Services\InternalJwtService;
 use Illuminate\Support\Facades\Cache;
 use Lcobucci\JWT\Configuration;
 use Lcobucci\JWT\Signer\Key\InMemory;
 use Lcobucci\JWT\Signer\Rsa\Sha256;
+use Modules\Auth\Security\InternalJwtSecurity;
 
 beforeEach(function () {
     Cache::store('redis')->flush();
 });
 
 it('genera un JWT firmado con RS256 que contiene el email en el claim sub', function () {
-    $service = app(InternalJwtService::class);
+    $service = app(InternalJwtSecurity::class);
 
     $token = $service->forEmail('user@example.com');
 
@@ -29,7 +29,7 @@ it('genera un JWT firmado con RS256 que contiene el email en el claim sub', func
 });
 
 it('el JWT expira en 5 minutos', function () {
-    $service = app(InternalJwtService::class);
+    $service = app(InternalJwtSecurity::class);
 
     $before = new DateTimeImmutable;
     $token = $service->forEmail('expiry@example.com');
@@ -50,7 +50,7 @@ it('el JWT expira en 5 minutos', function () {
 });
 
 it('retorna el mismo JWT desde caché para el mismo email', function () {
-    $service = app(InternalJwtService::class);
+    $service = app(InternalJwtSecurity::class);
 
     $first = $service->forEmail('cached@example.com');
     $second = $service->forEmail('cached@example.com');
@@ -59,7 +59,7 @@ it('retorna el mismo JWT desde caché para el mismo email', function () {
 });
 
 it('genera JWTs distintos para emails distintos', function () {
-    $service = app(InternalJwtService::class);
+    $service = app(InternalJwtSecurity::class);
 
     $tokenA = $service->forEmail('alice@example.com');
     $tokenB = $service->forEmail('bob@example.com');
@@ -68,7 +68,7 @@ it('genera JWTs distintos para emails distintos', function () {
 });
 
 it('genera un JWT nuevo después de que el caché expira', function () {
-    $service = app(InternalJwtService::class);
+    $service = app(InternalJwtSecurity::class);
     $email = 'refresh@example.com';
     $cacheKey = 'internal_jwt:'.sha1($email);
 

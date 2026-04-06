@@ -2,10 +2,10 @@
 
 namespace App\Providers;
 
-use App\Auth\JwtGatewayGuard;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\ServiceProvider;
+use Modules\Shared\Security\JwtGatewayGuard;
 
 class AppServiceProvider extends ServiceProvider
 {

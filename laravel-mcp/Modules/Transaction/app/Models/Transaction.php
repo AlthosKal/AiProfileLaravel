@@ -22,6 +22,7 @@ use Modules\Transaction\Database\Factories\TransactionFactory;
     'name',
     'amount',
     'description',
+    'type',
     'created_at',
     'updated_at',
 ])]

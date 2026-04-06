@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services;
+namespace Modules\Auth\Security;
 
 use DateTimeImmutable;
 use Illuminate\Support\Facades\Cache;
@@ -25,7 +25,7 @@ use Lcobucci\JWT\Signer\Rsa\Sha256;
  *   - iat: timestamp de emisión
  *   - exp: timestamp de expiración (5 minutos)
  */
-readonly class InternalJwtService
+readonly class InternalJwtSecurity
 {
     private const TTL_SECONDS = 300;
 

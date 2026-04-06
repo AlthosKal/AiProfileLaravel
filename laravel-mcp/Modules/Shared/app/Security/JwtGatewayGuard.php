@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Auth;
+namespace Modules\Shared\Security;
 
+use DateTimeZone;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Contracts\Auth\Guard;
 use Illuminate\Http\Request;
@@ -74,11 +75,9 @@ final class JwtGatewayGuard implements Guard
             $jwtConfiguration = $this->jwtConfiguration();
             $parsed = $jwtConfiguration->parser()->parse($token);
 
-            $jwtConfiguration->validator()->assert($parsed, ...[
-                new SignedWith($jwtConfiguration->signer(), $jwtConfiguration->verificationKey()),
-                new LooseValidAt(new SystemClock(new \DateTimeZone('UTC'))),
-                new IssuedBy(config('app.internal_api_url')),
-            ]);
+            $jwtConfiguration->validator()->assert($parsed, new SignedWith($jwtConfiguration->signer(), $jwtConfiguration->verificationKey()), new LooseValidAt(new SystemClock(new DateTimeZone('UTC'))), new IssuedBy(config('app.internal_api_url'))
+
+            );
 
             $email = $parsed->claims()->get('sub');
 
