@@ -3,80 +3,83 @@
 namespace Modules\Transaction\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Contracts\View\View;
-use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
+use Modules\Shared\Enums\ExportFormat;
+use Modules\Transaction\Actions\AddTransactionAction;
+use Modules\Transaction\Actions\DeleteTransactionAction;
+use Modules\Transaction\Actions\ExportTransactionAction;
+use Modules\Transaction\Actions\GetTransactionAction;
+use Modules\Transaction\Actions\ImportTransactionAction;
+use Modules\Transaction\Actions\UpdateTransactionAction;
+use Modules\Transaction\Enums\TransactionSuccessCode;
+use Modules\Transaction\Http\Data\AddOrUpdateTransactionData;
+use Modules\Transaction\Http\Requests\ExportTransactionRequest;
+use Modules\Transaction\Http\Requests\ImportTransactionRequest;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use Symfony\Component\HttpFoundation\Response;
 
 class TransactionController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    /**
-     * @phpstan-return View
-     */
-    public function index(): View
+    public function __construct(
+        private readonly GetTransactionAction $getAction,
+        private readonly AddTransactionAction $addAction,
+        private readonly UpdateTransactionAction $updateAction,
+        private readonly DeleteTransactionAction $deleteAction,
+        private readonly ExportTransactionAction $exportAction,
+        private readonly ImportTransactionAction $importAction,
+    ) {}
+
+    public function index(): JsonResponse
     {
-        return view('transaction::index');
+        $result = $this->getAction->getAll();
+
+        return $this->success(status: TransactionSuccessCode::TransactionListedSuccessfully->value, data: $result);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    /**
-     * @phpstan-return View
-     */
-    public function create(): View
+    public function store(AddOrUpdateTransactionData $data): JsonResponse
     {
-        return view('transaction::create');
+        $this->addAction->add($data);
+
+        return $this->success(status: TransactionSuccessCode::TransactionCreatedSuccessfully->value, httpStatus: Response::HTTP_CREATED);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request): RedirectResponse
+    public function show(int $id): JsonResponse
     {
-        // TODO: Implement store logic
-        return redirect()->back();
+        $result = $this->getAction->getById($id);
+
+        return $this->success(status: TransactionSuccessCode::TransactionListedSuccessfully->value, data: $result);
     }
 
-    /**
-     * Show the specified resource.
-     */
-    /**
-     * @phpstan-return View
-     */
-    public function show(string $id): View
+    public function update(int $id, AddOrUpdateTransactionData $data): JsonResponse
     {
-        return view('transaction::show');
-    }
+        $this->updateAction->update($id, $data);
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    /**
-     * @phpstan-return View
-     */
-    public function edit(string $id): View
-    {
-        return view('transaction::edit');
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id): RedirectResponse
-    {
-        // TODO: Implement update logic
-        return redirect()->back();
+        return $this->success(status: TransactionSuccessCode::TransactionUpdatedSuccessfully->value, httpStatus: Response::HTTP_CREATED);
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id): RedirectResponse
+    public function destroy(int $id): JsonResponse
     {
-        // TODO: Implement destroy logic
-        return redirect()->back();
+        $this->deleteAction->delete($id);
+
+        return $this->success(status: TransactionSuccessCode::TransactionDeletedSuccessfully->value, httpStatus: Response::HTTP_NO_CONTENT);
+    }
+
+    public function export(ExportTransactionRequest $request): BinaryFileResponse
+    {
+        $format = ExportFormat::from($request->validated('format'));
+
+        return $this->exportAction->export($format);
+    }
+
+    public function import(ImportTransactionRequest $request): JsonResponse
+    {
+        $format = ExportFormat::from($request->validated('format'));
+
+        $this->importAction->import($format, $request->file('file'));
+
+        return $this->success(status: TransactionSuccessCode::TransactionsImportedSuccessfully->value, httpStatus: Response::HTTP_CREATED);
     }
 }

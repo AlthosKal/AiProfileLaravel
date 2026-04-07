@@ -2,7 +2,6 @@
 
 namespace Modules\Transaction\Http\Data;
 
-use Modules\Transaction\Enums\TransactionType;
 use Spatie\LaravelData\Data;
 
 class GetTransactionResponseData extends Data

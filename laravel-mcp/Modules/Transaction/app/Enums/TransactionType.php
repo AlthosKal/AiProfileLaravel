@@ -2,7 +2,7 @@
 
 namespace Modules\Transaction\Enums;
 
-enum TransactionType : string
+enum TransactionType: string
 {
     case INCOME = 'income';
     case EXPENSE = 'expense';

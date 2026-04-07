@@ -3,7 +3,7 @@
 namespace Modules\Shared\Traits;
 
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Response;
+use Symfony\Component\HttpFoundation\Response;
 
 trait JsonResponseTrait
 {

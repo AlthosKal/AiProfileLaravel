@@ -5,11 +5,11 @@ namespace Modules\Auth\Http\Controllers;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
 use Modules\Auth\Actions\Auth\LoginAction;
 use Modules\Auth\Enums\AuthSuccessCode;
 use Modules\Auth\Http\Data\AuthenticatedSessionResponseData;
 use Modules\Auth\Http\Data\LoginData;
+use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 
 class AuthenticatedSessionController extends Controller

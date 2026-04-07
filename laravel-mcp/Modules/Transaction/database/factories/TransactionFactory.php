@@ -6,6 +6,9 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 use Modules\Transaction\Enums\TransactionType;
 use Modules\Transaction\Models\Transaction;
 
+/**
+ * @extends Factory<Transaction>
+ */
 class TransactionFactory extends Factory
 {
     /**
@@ -23,7 +26,7 @@ class TransactionFactory extends Factory
             'user_email' => $this->faker->safeEmail(),
             'amount' => $this->faker->randomFloat(2, 10),
             'description' => $this->faker->text(),
-            'type' => $this->faker->randomElement([TransactionType::cases()])
+            'type' => $this->faker->randomElement([TransactionType::cases()]),
         ];
     }
 }

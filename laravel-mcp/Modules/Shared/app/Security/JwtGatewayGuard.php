@@ -10,6 +10,7 @@ use Lcobucci\Clock\SystemClock;
 use Lcobucci\JWT\Configuration;
 use Lcobucci\JWT\Signer\Key\InMemory;
 use Lcobucci\JWT\Signer\Rsa\Sha256;
+use Lcobucci\JWT\Token\Plain;
 use Lcobucci\JWT\Validation\Constraint\IssuedBy;
 use Lcobucci\JWT\Validation\Constraint\LooseValidAt;
 use Lcobucci\JWT\Validation\Constraint\SignedWith;
@@ -79,6 +80,10 @@ final class JwtGatewayGuard implements Guard
 
             );
 
+            if (! $parsed instanceof Plain) {
+                return null;
+            }
+
             $email = $parsed->claims()->get('sub');
 
             if (empty($email)) {
@@ -95,9 +100,12 @@ final class JwtGatewayGuard implements Guard
 
     public function id(): ?string
     {
-        return $this->user()?->email;
+        $this->user();
+
+        return $this->user?->email;
     }
 
+    /** @param array<string, mixed> $credentials */
     public function validate(array $credentials = []): bool
     {
         return false;
@@ -108,8 +116,10 @@ final class JwtGatewayGuard implements Guard
         return $this->user !== null;
     }
 
-    public function setUser(Authenticatable $user): void
+    public function setUser(Authenticatable $user): static
     {
         $this->user = $user instanceof GatewayUser ? $user : null;
+
+        return $this;
     }
 }

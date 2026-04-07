@@ -12,7 +12,8 @@ class TransactionTypeRule implements ValidationRule
     /**
      * Run the validation rule.
      */
-    public function validate(string $attribute, mixed $value, Closure $fail): void {
+    public function validate(string $attribute, mixed $value, Closure $fail): void
+    {
         $valid = array_column(TransactionType::cases(), 'value');
 
         if (! in_array($value, $valid)) {

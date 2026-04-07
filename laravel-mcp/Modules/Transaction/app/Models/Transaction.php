@@ -7,9 +7,19 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 use Modules\Transaction\Database\Factories\TransactionFactory;
 
 /**
+ * @property int $id
+ * @property string $user_email
+ * @property string $name
+ * @property int $amount
+ * @property string $description
+ * @property string $type
+ * @property Carbon $created_at
+ * @property Carbon $updated_at
+ *
  * @method static TransactionFactory factory($count = null, $state = [])
  * @method static Builder<static>|Transaction newModelQuery()
  * @method static Builder<static>|Transaction newQuery()
@@ -28,6 +38,7 @@ use Modules\Transaction\Database\Factories\TransactionFactory;
 ])]
 class Transaction extends Model
 {
+    /** @use HasFactory<TransactionFactory> */
     use HasFactory;
 
     protected static function newFactory(): TransactionFactory

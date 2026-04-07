@@ -2,14 +2,17 @@
 
 namespace Modules\Transaction\Actions;
 
-use Modules\Transaction\Http\Data\AddTransactionData;
+use Modules\Shared\Security\GatewayUser;
+use Modules\Transaction\Http\Data\AddOrUpdateTransactionData;
 use Modules\Transaction\Models\Transaction;
 
-class AddTransactionAction
+readonly class AddTransactionAction
 {
-    public function add(AddTransactionData $data): void
+    public function add(AddOrUpdateTransactionData $data): void
     {
-        $user_email = request()->user()->email;
+        /** @var GatewayUser $user */
+        $user = request()->user();
+        $user_email = $user->email;
 
         Transaction::create([
             'user_email' => $user_email,
@@ -18,7 +21,6 @@ class AddTransactionAction
             'description' => $data->description,
             'type' => $data->type,
         ]);
-
 
     }
 }

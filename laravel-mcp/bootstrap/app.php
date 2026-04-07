@@ -3,6 +3,7 @@
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Http\Request;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -15,5 +16,7 @@ return Application::configure(basePath: dirname(__DIR__))
         //
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        //
+        // Al ser una API pura, forzamos JSON en todas las rutas api/* independientemente
+        // del header Accept del cliente, evitando respuestas HTML en errores no manejados.
+        $exceptions->shouldRenderJsonWhen(fn (Request $request) => $request->is('api/*'));
     })->create();

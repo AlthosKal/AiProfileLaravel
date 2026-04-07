@@ -3,21 +3,23 @@
 namespace Modules\Transaction\Actions;
 
 use Illuminate\Validation\ValidationException;
+use Modules\Shared\Security\GatewayUser;
 use Modules\Transaction\Enums\TransactionErrorCode;
-use Modules\Transaction\Http\Data\UpdateTransactionData;
+use Modules\Transaction\Http\Data\AddOrUpdateTransactionData;
 use Modules\Transaction\Models\Transaction;
 
-class UpdateTransactionAction
+readonly class UpdateTransactionAction
 {
-    public function update(UpdateTransactionData $data): void
+    public function update(int $id, AddOrUpdateTransactionData $data): void
     {
-        $user_email = request()->user()->email;
+        /** @var GatewayUser $user */
+        $user = request()->user();
+        $user_email = $user->email;
 
-        $transaction = Transaction::where('id', $data->id)->where('user_email', $user_email)->first();
-        if(!$transaction->exists())
-        {
+        $transaction = Transaction::where('id', $id)->where('user_email', $user_email)->first();
+        if (! $transaction->exists()) {
             throw ValidationException::withMessages([
-                'errorCode' => TransactionErrorCode::TransactionNotFound->value
+                'errorCode' => TransactionErrorCode::TransactionNotFound->value,
             ]);
         }
         $transaction->update([

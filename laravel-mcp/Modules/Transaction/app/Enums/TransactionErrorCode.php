@@ -2,7 +2,7 @@
 
 namespace Modules\Transaction\Enums;
 
-enum TransactionErrorCode : string
+enum TransactionErrorCode: string
 {
     // ID
     case IdRequired = 'id_required';
