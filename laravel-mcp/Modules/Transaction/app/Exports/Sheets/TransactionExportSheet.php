@@ -15,10 +15,18 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 /** @implements WithMapping<Transaction> */
 class TransactionExportSheet implements FromQuery, WithColumnFormatting, WithHeadings, WithMapping, WithStyles
 {
+    public function __construct(
+        private readonly string $dateFrom,
+        private readonly string $dateTo,
+    ) {}
+
     /** @return Builder<Transaction> */
     public function query(): Builder
     {
-        return Transaction::query()->orderByDesc('id');
+        return Transaction::query()
+            ->whereDate('created_at', '>=', $this->dateFrom)
+            ->whereDate('created_at', '<=', $this->dateTo)
+            ->orderByDesc('id');
     }
 
     /**

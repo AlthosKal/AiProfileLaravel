@@ -1,10 +1,10 @@
 <?php
 
-namespace Modules\McpClient\Database\Seeders;
+namespace Modules\Client\Database\Seeders;
 
 use Illuminate\Database\Seeder;
 
-class McpClientDatabaseSeeder extends Seeder
+class ClientDatabaseSeeder extends Seeder
 {
     /**
      * Run the database seeds.

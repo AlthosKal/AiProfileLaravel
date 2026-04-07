@@ -1,21 +1,21 @@
 <?php
 
-namespace Modules\McpClient\Providers;
+namespace Modules\Client\Providers;
 
 use Illuminate\Console\Scheduling\Schedule;
 use Nwidart\Modules\Support\ModuleServiceProvider;
 
-class McpClientServiceProvider extends ModuleServiceProvider
+class ClientServiceProvider extends ModuleServiceProvider
 {
     /**
      * The name of the module.
      */
-    protected string $name = 'McpClient';
+    protected string $name = 'Client';
 
     /**
      * The lowercase version of the module name.
      */
-    protected string $nameLower = 'mcpclient';
+    protected string $nameLower = 'client';
 
     /**
      * Command classes to register.

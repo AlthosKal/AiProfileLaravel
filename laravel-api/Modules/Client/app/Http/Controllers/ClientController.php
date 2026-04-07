@@ -1,13 +1,13 @@
 <?php
 
-namespace Modules\McpClient\Http\Controllers;
+namespace Modules\Client\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
-class McpClientController extends Controller
+class ClientController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -17,7 +17,7 @@ class McpClientController extends Controller
      */
     public function index(): View
     {
-        return view('mcpclient::index');
+        return view('client::index');
     }
 
     /**
@@ -28,7 +28,7 @@ class McpClientController extends Controller
      */
     public function create(): View
     {
-        return view('mcpclient::create');
+        return view('client::create');
     }
 
     /**
@@ -48,7 +48,7 @@ class McpClientController extends Controller
      */
     public function show(string $id): View
     {
-        return view('mcpclient::show');
+        return view('client::show');
     }
 
     /**
@@ -59,7 +59,7 @@ class McpClientController extends Controller
      */
     public function edit(string $id): View
     {
-        return view('mcpclient::edit');
+        return view('client::edit');
     }
 
     /**

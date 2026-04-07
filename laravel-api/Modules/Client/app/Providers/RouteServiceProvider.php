@@ -1,13 +1,13 @@
 <?php
 
-namespace Modules\McpClient\Providers;
+namespace Modules\Client\Providers;
 
 use Illuminate\Foundation\Support\Providers\RouteServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Route;
 
 class RouteServiceProvider extends ServiceProvider
 {
-    protected string $name = 'McpClient';
+    protected string $name = 'Client';
 
     /**
      * Called before routes are registered.

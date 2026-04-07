@@ -18,6 +18,8 @@ class ExportTransactionRequest extends FormRequest
     {
         return [
             'format' => ['required', 'string', Rule::enum(ExportFormat::class)],
+            'date_from' => ['required', 'date', 'before_or_equal:date_to'],
+            'date_to' => ['required', 'date', 'after_or_equal:date_from'],
         ];
     }
 }

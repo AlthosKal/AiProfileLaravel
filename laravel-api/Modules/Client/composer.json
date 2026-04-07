@@ -1,5 +1,5 @@
 {
-    "name": "nwidart/mcpclient",
+    "name": "nwidart/client",
     "description": "",
     "authors": [
         {
@@ -15,14 +15,14 @@
     },
     "autoload": {
         "psr-4": {
-            "Modules\\McpClient\\": "app/",
-            "Modules\\McpClient\\Database\\Factories\\": "database/factories/",
-            "Modules\\McpClient\\Database\\Seeders\\": "database/seeders/"
+            "Modules\\Client\\": "app/",
+            "Modules\\Client\\Database\\Factories\\": "database/factories/",
+            "Modules\\Client\\Database\\Seeders\\": "database/seeders/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "Modules\\McpClient\\Tests\\": "tests/"
+            "Modules\\Client\\Tests\\": "tests/"
         }
     }
 }

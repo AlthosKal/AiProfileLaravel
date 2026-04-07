@@ -4,6 +4,7 @@ namespace Modules\Transaction\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Modules\Shared\Enums\ExportFormat;
 use Modules\Transaction\Actions\AddTransactionAction;
 use Modules\Transaction\Actions\DeleteTransactionAction;
@@ -18,6 +19,13 @@ use Modules\Transaction\Http\Requests\ImportTransactionRequest;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\Response;
 
+/**
+ * Controlador REST para el módulo de transacciones.
+ *
+ * Todas las rutas están protegidas por el guard jwt-gateway, por lo que
+ * $request->user() siempre retorna un GatewayUser con el email del JWT.
+ * Cada operación está delegada a su Action correspondiente.
+ */
 class TransactionController extends Controller
 {
     public function __construct(
@@ -29,56 +37,80 @@ class TransactionController extends Controller
         private readonly ImportTransactionAction $importAction,
     ) {}
 
-    public function index(): JsonResponse
+    /**
+     * Retorna todas las transacciones del usuario autenticado.
+     */
+    public function index(Request $request): JsonResponse
     {
-        $result = $this->getAction->getAll();
+        $user = $request->user();
+        $result = $this->getAction->getAll($user);
 
         return $this->success(status: TransactionSuccessCode::TransactionListedSuccessfully->value, data: $result);
     }
 
-    public function store(AddOrUpdateTransactionData $data): JsonResponse
+    /**
+     * Crea una nueva transacción para el usuario autenticado.
+     */
+    public function store(AddOrUpdateTransactionData $data, Request $request): JsonResponse
     {
-        $this->addAction->add($data);
+        $user = $request->user();
+        $this->addAction->add($data, $user);
 
         return $this->success(status: TransactionSuccessCode::TransactionCreatedSuccessfully->value, httpStatus: Response::HTTP_CREATED);
     }
 
-    public function show(int $id): JsonResponse
+    /**
+     * Retorna una transacción específica del usuario autenticado.
+     */
+    public function show(int $id, Request $request): JsonResponse
     {
-        $result = $this->getAction->getById($id);
+        $user = $request->user();
+        $result = $this->getAction->getById($id, $user);
 
         return $this->success(status: TransactionSuccessCode::TransactionListedSuccessfully->value, data: $result);
     }
 
-    public function update(int $id, AddOrUpdateTransactionData $data): JsonResponse
+    /**
+     * Actualiza una transacción existente del usuario autenticado.
+     */
+    public function update(int $id, AddOrUpdateTransactionData $data, Request $request): JsonResponse
     {
-        $this->updateAction->update($id, $data);
+        $user = $request->user();
+        $this->updateAction->update($id, $data, $user);
 
         return $this->success(status: TransactionSuccessCode::TransactionUpdatedSuccessfully->value, httpStatus: Response::HTTP_CREATED);
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Elimina una transacción del usuario autenticado.
      */
-    public function destroy(int $id): JsonResponse
+    public function destroy(int $id, Request $request): JsonResponse
     {
-        $this->deleteAction->delete($id);
+        $user = $request->user();
+        $this->deleteAction->delete($id, $user);
 
         return $this->success(status: TransactionSuccessCode::TransactionDeletedSuccessfully->value, httpStatus: Response::HTTP_NO_CONTENT);
     }
 
-    public function export(ExportTransactionRequest $request): BinaryFileResponse
+    /**
+     * Exporta las transacciones del usuario en el formato y rango de fechas indicados.
+     */
+    public function export(ExportTransactionRequest $export): BinaryFileResponse
     {
-        $format = ExportFormat::from($request->validated('format'));
+        $format = ExportFormat::from($export->validated('format'));
 
-        return $this->exportAction->export($format);
+        return $this->exportAction->export($format, $export->validated('date_from'), $export->validated('date_to'));
     }
 
-    public function import(ImportTransactionRequest $request): JsonResponse
+    /**
+     * Importa transacciones desde un archivo en el formato indicado.
+     */
+    public function import(ImportTransactionRequest $import, Request $request): JsonResponse
     {
-        $format = ExportFormat::from($request->validated('format'));
+        $user = $request->user();
+        $format = ExportFormat::from($import->validated('format'));
 
-        $this->importAction->import($format, $request->file('file'));
+        $this->importAction->import($format, $import->file('file'), $user);
 
         return $this->success(status: TransactionSuccessCode::TransactionsImportedSuccessfully->value, httpStatus: Response::HTTP_CREATED);
     }

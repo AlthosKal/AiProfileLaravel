@@ -1,6 +1,6 @@
 <?php
 
-namespace Modules\McpClient\Providers;
+namespace Modules\Client\Providers;
 
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
 

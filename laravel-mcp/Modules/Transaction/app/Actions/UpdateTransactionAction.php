@@ -8,25 +8,24 @@ use Modules\Transaction\Enums\TransactionErrorCode;
 use Modules\Transaction\Http\Data\AddOrUpdateTransactionData;
 use Modules\Transaction\Models\Transaction;
 
+/**
+ * Actualiza una transacción existente del usuario autenticado.
+ *
+ * Verifica que la transacción pertenezca al usuario antes de modificarla
+ * para evitar que un usuario edite registros ajenos.
+ */
 readonly class UpdateTransactionAction
 {
-    public function update(int $id, AddOrUpdateTransactionData $data): void
+    public function update(int $id, AddOrUpdateTransactionData $data, GatewayUser $user): void
     {
-        /** @var GatewayUser $user */
-        $user = request()->user();
-        $user_email = $user->email;
+        $transaction = Transaction::where('id', $id)->where('user_email', $user->email)->first();
 
-        $transaction = Transaction::where('id', $id)->where('user_email', $user_email)->first();
         if (! $transaction->exists()) {
             throw ValidationException::withMessages([
                 'errorCode' => TransactionErrorCode::TransactionNotFound->value,
             ]);
         }
-        $transaction->update([
-            'name' => $data->name,
-            'amount' => $data->amount,
-            'description' => $data->description,
-            'type' => $data->type,
-        ]);
+
+        $transaction->update($data->toArray());
     }
 }
