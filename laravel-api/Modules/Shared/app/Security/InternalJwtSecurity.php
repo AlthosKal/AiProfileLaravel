@@ -1,6 +1,6 @@
 <?php
 
-namespace Modules\Auth\Security;
+namespace Modules\Shared\Security;
 
 use DateTimeImmutable;
 use Illuminate\Support\Facades\Cache;

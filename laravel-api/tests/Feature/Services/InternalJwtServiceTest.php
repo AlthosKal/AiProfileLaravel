@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Cache;
 use Lcobucci\JWT\Configuration;
 use Lcobucci\JWT\Signer\Key\InMemory;
 use Lcobucci\JWT\Signer\Rsa\Sha256;
-use Modules\Auth\Security\InternalJwtSecurity;
+use Modules\Shared\Security\InternalJwtSecurity;
 
 beforeEach(function () {
     Cache::store('redis')->flush();

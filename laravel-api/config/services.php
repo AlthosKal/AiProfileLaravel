@@ -20,4 +20,7 @@ return [
         'redirect' => env('GOOGLE_REDIRECT_URI'),
     ],
 
+    'laravel-mcp' => [
+        'url' => env('LARAVEL_MCP_URL'),
+    ],
 ];
