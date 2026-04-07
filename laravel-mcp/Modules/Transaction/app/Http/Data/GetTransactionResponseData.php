@@ -10,7 +10,7 @@ class GetTransactionResponseData extends Data
         public string $id,
         public string $user_email,
         public string $name,
-        public int $amount,
+        public float $amount,
         public string $description,
         public string $type,
         public string $created_at,

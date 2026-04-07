@@ -14,7 +14,7 @@ use Modules\Transaction\Database\Factories\TransactionFactory;
  * @property int $id
  * @property string $user_email
  * @property string $name
- * @property int $amount
+ * @property float $amount
  * @property string $description
  * @property string $type
  * @property Carbon $created_at

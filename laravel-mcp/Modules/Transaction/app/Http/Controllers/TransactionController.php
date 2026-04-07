@@ -9,7 +9,7 @@ use Modules\Shared\Enums\ExportFormat;
 use Modules\Transaction\Actions\AddTransactionAction;
 use Modules\Transaction\Actions\DeleteTransactionAction;
 use Modules\Transaction\Actions\ExportTransactionAction;
-use Modules\Transaction\Actions\GetTransactionAction;
+use Modules\Transaction\Actions\GetTransactionsAction;
 use Modules\Transaction\Actions\ImportTransactionAction;
 use Modules\Transaction\Actions\UpdateTransactionAction;
 use Modules\Transaction\Enums\TransactionSuccessCode;
@@ -29,7 +29,7 @@ use Symfony\Component\HttpFoundation\Response;
 class TransactionController extends Controller
 {
     public function __construct(
-        private readonly GetTransactionAction $getAction,
+        private readonly GetTransactionsAction $getAction,
         private readonly AddTransactionAction $addAction,
         private readonly UpdateTransactionAction $updateAction,
         private readonly DeleteTransactionAction $deleteAction,
@@ -43,7 +43,11 @@ class TransactionController extends Controller
     public function index(Request $request): JsonResponse
     {
         $user = $request->user();
-        $result = $this->getAction->getAll($user);
+        $result = $this->getAction->getAll(
+            user: $user,
+            perPage: (int) $request->query('per_page', 15),
+            page: (int) $request->query('page', 1),
+        );
 
         return $this->success(status: TransactionSuccessCode::TransactionListedSuccessfully->value, data: $result);
     }

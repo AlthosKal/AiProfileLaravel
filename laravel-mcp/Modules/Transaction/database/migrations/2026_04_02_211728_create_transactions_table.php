@@ -16,7 +16,7 @@ return new class extends Migration
             $table->id()->primary();
             $table->string('user_email');
             $table->string('name');
-            $table->bigInteger('amount');
+            $table->float('amount');
             $table->text('description');
             $table->enum('type', array_column(TransactionType::cases(), 'value'));
             $table->timestamps();
