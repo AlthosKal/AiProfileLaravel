@@ -94,7 +94,7 @@ class UserSecurityEvent extends Model
     /**
      * Desbloquear este evento (registrar desbloqueo)
      *
-     * Soporta desbloqueos manuales y automáticos.
+     * soporta desbloqueos manuales y automáticos.
      */
     public function unblock(?User $admin = null, string $reason = 'Desbloqueo'): void
     {

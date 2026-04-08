@@ -3,7 +3,7 @@
 namespace Modules\Auth\Enums;
 
 /**
- * Enum donde se declaran las claves semanticas de API para las diferentes validaciónes de la API
+ * Enum donde se declaran las claves semánticas de API para las diferentes validaciónes de la API
  */
 enum AuthErrorCode: string
 {

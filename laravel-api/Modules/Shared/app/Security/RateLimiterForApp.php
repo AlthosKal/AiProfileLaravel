@@ -4,9 +4,9 @@ namespace Modules\Shared\Security;
 
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
 use Illuminate\Support\Facades\RateLimiter;
 use Modules\Shared\Enums\SharedErrorCode;
+use Symfony\Component\HttpFoundation\Response;
 
 /**
  * Safety net de rate limiting a nivel de ruta.
@@ -17,8 +17,8 @@ use Modules\Shared\Enums\SharedErrorCode;
  *   ->middleware(RateLimiterForApp::middleware('login'))
  *
  * Dos capas opcionales (OWASP / Securing Laravel):
- *   - $byIp:    protección contra DDoS/flood — usar siempre
- *   - $byEmail: protección contra credential stuffing con rotación de IPs
+ *   - $byIp: protección contra DDoS/flood — usar siempre
+ *   - $byEmail: protección contra credential stuffing con rotación de IP
  *               solo para rutas que reciben email en el body
  */
 class RateLimiterForApp

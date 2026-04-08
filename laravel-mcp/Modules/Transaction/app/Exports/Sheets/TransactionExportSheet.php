@@ -13,11 +13,11 @@ use PhpOffice\PhpSpreadsheet\Style\NumberFormat;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
 /** @implements WithMapping<Transaction> */
-class TransactionExportSheet implements FromQuery, WithColumnFormatting, WithHeadings, WithMapping, WithStyles
+readonly class TransactionExportSheet implements FromQuery, WithColumnFormatting, WithHeadings, WithMapping, WithStyles
 {
     public function __construct(
-        private readonly string $dateFrom,
-        private readonly string $dateTo,
+        private string $dateFrom,
+        private string $dateTo,
     ) {}
 
     /** @return Builder<Transaction> */

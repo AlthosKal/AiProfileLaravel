@@ -120,7 +120,7 @@ class User extends Authenticatable implements MustVerifyEmail
     }
 
     /**
-     * Transforma atributos automaticamente.
+     * Transforma atributos automáticamente.
      *
      * @return array<string, string>
      */

@@ -27,18 +27,6 @@ abstract class BaseException extends Exception
     }
 
     /**
-     * Establecer detalles adicionales de la excepción.
-     *
-     * @param  array<string, mixed>  $details
-     */
-    public function setDetails(array $details): self
-    {
-        $this->details = $details;
-
-        return $this;
-    }
-
-    /**
      * Obtener el código de error.
      */
     public function getErrorCode(): string

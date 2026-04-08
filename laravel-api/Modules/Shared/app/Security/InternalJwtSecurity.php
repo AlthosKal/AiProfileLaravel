@@ -2,6 +2,7 @@
 
 namespace Modules\Shared\Security;
 
+use DateMalformedStringException;
 use DateTimeImmutable;
 use Illuminate\Support\Facades\Cache;
 use Lcobucci\JWT\Configuration;
@@ -9,7 +10,7 @@ use Lcobucci\JWT\Signer\Key\InMemory;
 use Lcobucci\JWT\Signer\Rsa\Sha256;
 
 /**
- * Genera JWTs RS256 de corta duración para comunicación interna entre
+ * Genera JWT RS256 de corta duración para comunicación interna entre
  * laravel-api y laravel-mcp.
  *
  * El token se firma con la clave privada de Passport y puede ser validado
@@ -27,9 +28,9 @@ use Lcobucci\JWT\Signer\Rsa\Sha256;
  */
 readonly class InternalJwtSecurity
 {
-    private const TTL_SECONDS = 300;
+    private const int TTL_SECONDS = 300;
 
-    private const CACHE_PREFIX = 'internal_jwt:';
+    private const string CACHE_PREFIX = 'internal_jwt:';
 
     private Configuration $jwtConfiguration;
 
@@ -63,6 +64,8 @@ readonly class InternalJwtSecurity
 
     /**
      * Genera un JWT interno firmado con RS256 para el email dado.
+     *
+     * @throws DateMalformedStringException
      */
     private function generate(string $email): string
     {

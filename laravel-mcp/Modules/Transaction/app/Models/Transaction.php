@@ -26,6 +26,14 @@ use Modules\Transaction\Database\Factories\TransactionFactory;
  * @method static Builder<static>|Transaction newQuery()
  * @method static Builder<static>|Transaction query()
  * @method static Builder<static>|Transaction forUser(GatewayUser $user)
+ * @method static Builder<static>|Transaction whereAmount($value)
+ * @method static Builder<static>|Transaction whereCreatedAt($value)
+ * @method static Builder<static>|Transaction whereDescription($value)
+ * @method static Builder<static>|Transaction whereId($value)
+ * @method static Builder<static>|Transaction whereName($value)
+ * @method static Builder<static>|Transaction whereType($value)
+ * @method static Builder<static>|Transaction whereUpdatedAt($value)
+ * @method static Builder<static>|Transaction whereUserEmail($value)
  *
  * @mixin Eloquent
  */
@@ -49,7 +57,7 @@ class Transaction extends Model
     }
 
     /**
-     * Transforma atributos automaticamente.
+     * Transforma atributos automáticamente.
      *
      * @return array<string, string>
      */

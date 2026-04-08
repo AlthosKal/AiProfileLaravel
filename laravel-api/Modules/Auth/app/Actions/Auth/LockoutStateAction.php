@@ -17,12 +17,12 @@ use Throwable;
  * Acción responsable de escalar el estado de lockout cuando se supera el Rate Limiter.
  *
  * Sistema de lockout progresivo de 3 niveles:
- *   - Nivel 1 (primer lockout):  bloqueo de 1 minuto  + activación de reCAPTCHA
- *   - Nivel 2 (segundo lockout): bloqueo de 1 hora    + reCAPTCHA sigue activo
- *   - Nivel 3 (tercer lockout):  bloqueo PERMANENTE   + registro en user_security_events
+ *   - Nivel 1 (primer lockout): bloqueo de 1 minuto + activación de reCAPTCHA
+ *   - Nivel 2 (segundo lockout): bloqueo de 1 hora + reCAPTCHA sigue activo
+ *   - Nivel 3 (tercer lockout): bloqueo PERMANENTE + registro en user_security_events
  *
- * El conteo de lockouts se almacena en cache con TTL de 24 horas, por email,
- * independientemente de la IP (para resistir rotación de IPs según OWASP).
+ * El conteo de lockouts se almacena en caché con TTL de 24 horas, por email,
+ * independientemente de la IP (para resistir rotación de IP según OWASP).
  *
  * Esta acción es invocada exclusivamente desde LoginAction cuando se detecta
  * que se superó el Rate Limiter, no directamente desde controllers.
@@ -66,7 +66,7 @@ readonly class LockoutStateAction
     {
         $duration = 60;
 
-        // Activar reCAPTCHA para este email (persiste 24 horas en cache)
+        // Activar reCAPTCHA para este email (persiste 24 horas en caché)
         $this->store->enableCaptcha($email);
         $this->saveExpiryTimestamp($email, $duration);
 
@@ -112,11 +112,11 @@ readonly class LockoutStateAction
     }
 
     /**
-     * Guardar el timestamp de expiración del bloqueo en cache.
+     * Guardar el timestamp de expiración del bloqueo en caché.
      *
      * Se almacena como unix timestamp para que el frontend pueda calcular
      * el countdown exacto sin depender del reloj del servidor en cada request.
-     * La TTL del cache coincide con la duración del bloqueo para auto-limpiar.
+     * La TTL del caché coincide con la duración del bloqueo para auto-limpiar.
      */
     private function saveExpiryTimestamp(string $email, int $seconds): void
     {
@@ -134,7 +134,7 @@ readonly class LockoutStateAction
      * persistente. Se ejecutan tres acciones en orden:
      *   1. Actualizar `security_status` del usuario a PERMANENTLY_BLOCKED en DB.
      *   2. Registrar el evento de seguridad en `user_security_events` para auditoría.
-     *   3. Limpiar el cache de lockout (el bloqueo ahora vive en DB, no en cache).
+     *   3. Limpiar el caché de lockout (el bloqueo ahora vive en DB, no en caché).
      *
      * Si el email no corresponde a un usuario existente, se lanza
      * UserNotFoundForLockoutException para alertar de una anomalía (intentos

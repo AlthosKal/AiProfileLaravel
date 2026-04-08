@@ -30,7 +30,7 @@ class RegisterUserData extends Data
         public string $password,
         #[Rule('required|integer|digits_between:1,10')]
         public int $identification_number,
-        // IdentificationTypeRule valida que el valor sea un case válido del enum IdentificationTypeEnum.
+        // IdentificationTypeRule válida que el valor sea un case válido del enum IdentificationTypeEnum.
         #[Rule(['required', 'string', 'max:8', new IdentificationTypeRule])]
         public string $identification_type,
         #[Rule(['nullable', 'string', new RecaptchaV3Rule('register')])]

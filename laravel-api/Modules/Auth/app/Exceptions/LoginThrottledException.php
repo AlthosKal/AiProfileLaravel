@@ -3,10 +3,10 @@
 namespace Modules\Auth\Exceptions;
 
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Response;
 use Modules\Auth\Enums\AuthErrorCode;
 use Modules\Auth\Http\Data\LockoutStateData;
 use Modules\Shared\Exceptions\BaseException;
+use Symfony\Component\HttpFoundation\Response;
 
 class LoginThrottledException extends BaseException
 {

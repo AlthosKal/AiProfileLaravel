@@ -24,7 +24,7 @@ class UserSecurityStateBuilder extends Builder
      */
     public function withTimestamps(): self
     {
-        $this->join('users', 'users.email', '=', 'user_current_security_state.user_id')
+        $this->join('users', 'users.email', '=', 'user_current_security_state.user_email')
             ->select('user_current_security_state.*', 'users.created_at', 'users.updated_at');
 
         return $this;

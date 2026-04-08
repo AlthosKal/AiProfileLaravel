@@ -7,9 +7,9 @@ use Maatwebsite\Excel\Concerns\WithValidation;
 use Modules\Transaction\Enums\TransactionType;
 use Modules\Transaction\Models\Transaction;
 
-class TransactionImportSheet implements ToModel, WithValidation
+readonly class TransactionImportSheet implements ToModel, WithValidation
 {
-    public function __construct(private readonly string $userEmail) {}
+    public function __construct(private string $userEmail) {}
 
     /** @param array<int, mixed> $row */
     public function model(array $row): Transaction

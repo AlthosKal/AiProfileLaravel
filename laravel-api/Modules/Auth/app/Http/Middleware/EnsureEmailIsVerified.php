@@ -4,9 +4,9 @@ namespace Modules\Auth\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
 use Modules\Auth\Enums\AuthStatusCode;
 use Modules\Shared\Traits\JsonResponseTrait;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 /**

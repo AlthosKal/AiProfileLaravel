@@ -26,12 +26,6 @@ class AuthServiceProvider extends ModuleServiceProvider
     {
         PasswordSecurity::default();
     }
-    /**
-     * Command classes to register.
-     *
-     * @var string[]
-     */
-    // protected array $commands = [];
 
     /**
      * Provider classes to register.

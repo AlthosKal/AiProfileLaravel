@@ -17,7 +17,7 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
  * autenticado y delega cada operación a HttpClient, que se encarga de
  * adjuntar el JWT interno y llamar a laravel-mcp.
  *
- * La validación de datos se delega a laravel-mcp; aquí sólo se asegura
+ * La validación de datos se delega a laravel-mcp; aquí solo se asegura
  * que el payload sea un array antes de reenviarlo.
  */
 class TransactionController extends Controller

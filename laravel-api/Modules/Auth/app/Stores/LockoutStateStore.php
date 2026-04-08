@@ -68,7 +68,7 @@ class LockoutStateStore implements LockoutStateStoreInterface
      *  Generar key única para Redis basada solo en email.
      *
      *  Deliberadamente, NO incluye IP: el contador de lockouts debe acumularse
-     *  por cuenta para resistir rotación de IPs (OWASP Authentication Cheat Sheet).
+     *  por cuenta para resistir rotación de IP (OWASP Authentication Cheat Sheet).
      */
     private function getKey(string $prefix, string $email): string
     {

@@ -2,6 +2,7 @@
 
 namespace Modules\Auth\Models\Concerns;
 
+use Carbon\CarbonInterface;
 use Hash;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
@@ -28,7 +29,7 @@ trait HasPasswordExpiration
     /**
      * Obtener la fecha en la cual se hizo el último cambio de contraseña
      */
-    public function getPasswordTimeExists(): Carbon
+    public function getPasswordTimeExists(): CarbonInterface
     {
         $expirationDays = config('auth.password_expiration_days', 30);
 
@@ -91,7 +92,7 @@ trait HasPasswordExpiration
      */
     public function cleanOldPasswordHistories(): void
     {
-        // Obtener los IDs a conservar (los $keep más recientes) y eliminar el resto.
+        // Obtener los ID a conservar (los $keep más recientes) y eliminar el resto.
         // Se usa limit+offset en lugar de skip() solo porque SQLite (tests) no soporta
         // OFFSET sin LIMIT; el comportamiento es idéntico en producción con MySQL/Postgres.
         $keepIds = $this->getPasswordHistories()

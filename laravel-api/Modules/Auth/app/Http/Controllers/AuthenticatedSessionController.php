@@ -22,7 +22,7 @@ class AuthenticatedSessionController extends Controller
      * Autenticar al usuario y retornar el token Sanctum junto con el estado post-login.
      *
      * El token debe incluirse en el header `Authorization: Bearer {token}` en todos
-     * los requests autenticados subsiguientes. Las flags post-login permiten al frontend
+     * los requests autenticados subsiguientes. Los flags post-login permiten al frontend
      * redirigir al desafío 2FA, a verificación de email, o mostrar advertencia de
      * contraseña próxima a vencer según corresponda.
      *
@@ -47,6 +47,7 @@ class AuthenticatedSessionController extends Controller
     public function destroy(Request $request): Response
     {
         $request->user()->userIsLogout($request->user()->email);
+
         $request->user()->currentAccessToken()->delete();
 
         return response()->noContent();

@@ -16,7 +16,7 @@ use Throwable;
  *
  * Estados:
  * - CLOSED: Operación normal, todas las llamadas se ejecutan
- * - OPEN: Servicio fallando, usar fallback inmediatamente
+ * - OPEN: servicio fallando, usar fallback inmediatamente
  * - HALF_OPEN: Intentando recuperación, probar servicio gradualmente
  *
  * Configuración vía .env:
@@ -38,7 +38,7 @@ class CircuitBreakerAction
     /**
      * Ejecutar operación con circuit breaker.
      *
-     * Si la operación falla, el error se reporta al manejador global de excepciones
+     * Si la operación falla, el error se reporta al manejado global de excepciones
      * y se ejecuta el fallback. No se relanza la excepción.
      *
      * @param  callable(): mixed  $operation  Operación principal a ejecutar

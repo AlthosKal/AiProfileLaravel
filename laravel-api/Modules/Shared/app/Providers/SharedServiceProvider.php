@@ -16,13 +16,6 @@ class SharedServiceProvider extends ModuleServiceProvider
      */
     protected string $nameLower = 'shared';
 
-    // /**
-    //  * Command classes to register.
-    //  *
-    //  * @var string[]
-    //  */
-    // protected array $commands = [];
-
     public function boot(): void {}
 
     /**
@@ -32,14 +25,4 @@ class SharedServiceProvider extends ModuleServiceProvider
         EventServiceProvider::class,
         RouteServiceProvider::class,
     ];
-
-    /**
-     * Define module schedules.
-     *
-     * @param  $schedule
-     */
-    // protected function configureSchedules(Schedule $schedule): void
-    // {
-    //     $schedule->command('inspire')->hourly();
-    // }
 }

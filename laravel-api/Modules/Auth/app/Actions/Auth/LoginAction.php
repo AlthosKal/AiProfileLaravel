@@ -122,10 +122,10 @@ readonly class LoginAction
             ])
             ->log("Usuario $user->name, con correo $user->email, con número de identificación $user->identification_number y con tipo de identificación $user->identification_type inició sesión correctamente el $user->last_login_at desde la ip $ip");
 
-        // 6. Crear el token Sanctum y construir las flags de estado post-login.
+        // 6. Crear el token Sanctum y construir los flags de estado post-login.
         //    El plainTextToken solo está disponible en este momento — en DB se guarda
         //    su hash SHA-256 y no puede recuperarse después.
-        //    Las flags no interrumpen el flujo — el frontend decide cómo reaccionar.
+        //    Los flags no interrumpen el flujo — el frontend decide cómo reaccionar.
 
         return new LoginResponseData(
             token: $user->createToken($data->device_name)->plainTextToken,
@@ -174,7 +174,7 @@ readonly class LoginAction
      * Verificar si reCAPTCHA es obligatorio y si el token fue provisto.
      *
      * reCAPTCHA se activa tras el primer lockout y permanece activo 24 horas.
-     * Si está activo pero no se envió token, se rechaza con un error en el campo
+     * Si está activo, pero no se envió token, se rechaza con un error en el campo
      * `recaptcha_token` para que el frontend pueda mostrar el widget.
      *
      * La validación del score del token la realiza RecaptchaV3Rule en el DTO
@@ -203,7 +203,7 @@ readonly class LoginAction
      * Se considera "próxima a vencer" cuando los días restantes están dentro
      * de la ventana de advertencia configurada en `auth.password_expiration_warning_days`.
      * El frontend puede mostrar un aviso no bloqueante con los días exactos restantes.
-     * Si la contraseña ya venció (`hasPasswordExpired`) no aplica esta advertencia
+     * Si la contraseña ya venció (`hasPasswordExpired`) no aplica esta advertencia,
      * ya que ese caso se maneja con un middleware de expiración.
      */
     private function isPasswordAboutToExpire(User $user): bool

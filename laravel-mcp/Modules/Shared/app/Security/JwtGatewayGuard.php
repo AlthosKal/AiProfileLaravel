@@ -75,14 +75,11 @@ final class JwtGatewayGuard implements Guard
         try {
             $jwtConfiguration = $this->jwtConfiguration();
             $parsed = $jwtConfiguration->parser()->parse($token);
+            assert($parsed instanceof Plain);
 
             $jwtConfiguration->validator()->assert($parsed, new SignedWith($jwtConfiguration->signer(), $jwtConfiguration->verificationKey()), new LooseValidAt(new SystemClock(new DateTimeZone('UTC'))), new IssuedBy(config('app.internal_api_url'))
 
             );
-
-            if (! $parsed instanceof Plain) {
-                return null;
-            }
 
             $email = $parsed->claims()->get('sub');
 
@@ -116,7 +113,7 @@ final class JwtGatewayGuard implements Guard
         return $this->user !== null;
     }
 
-    public function setUser(Authenticatable $user): static
+    public function setUser(Authenticatable $user): JwtGatewayGuard
     {
         $this->user = $user instanceof GatewayUser ? $user : null;
 

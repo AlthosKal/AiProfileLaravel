@@ -7,8 +7,8 @@ use Illuminate\Database\Eloquent\Attributes\Guarded;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Attributes\WithoutIncrementing;
 use Illuminate\Database\Eloquent\Attributes\WithoutTimestamps;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Query\Builder as QueryBuilder;
 use Illuminate\Support\Carbon;
 use Modules\Auth\Builders\UserSecurityStateBuilder;
 
@@ -18,9 +18,9 @@ use Modules\Auth\Builders\UserSecurityStateBuilder;
  * @property Carbon|null $blocked_until
  * @property bool $is_active
  *
- * @method static Builder<static>|UserSecurityState newModelQuery()
- * @method static Builder<static>|UserSecurityState newQuery()
- * @method static Builder<static>|UserSecurityState query()
+ * @method static UserSecurityStateBuilder newModelQuery()
+ * @method static UserSecurityStateBuilder newQuery()
+ * @method static UserSecurityStateBuilder query()
  *
  * @property string|null $user_email
  * @property string|null $name
@@ -29,14 +29,20 @@ use Modules\Auth\Builders\UserSecurityStateBuilder;
  * @property string|null $blocked_from_ip
  * @property int|null $lockout_count
  *
- * @method static Builder<static>|UserSecurityState whereBlockedAt($value)
- * @method static Builder<static>|UserSecurityState whereBlockedFromIp($value)
- * @method static Builder<static>|UserSecurityState whereBlockedReason($value)
- * @method static Builder<static>|UserSecurityState whereBlockedUntil($value)
- * @method static Builder<static>|UserSecurityState whereLockoutCount($value)
- * @method static Builder<static>|UserSecurityState whereName($value)
- * @method static Builder<static>|UserSecurityState whereSecurityStatus($value)
- * @method static Builder<static>|UserSecurityState whereUserEmail($value)
+ * @method static UserSecurityStateBuilder whereBlockedAt($value)
+ * @method static UserSecurityStateBuilder whereBlockedFromIp($value)
+ * @method static UserSecurityStateBuilder whereBlockedReason($value)
+ * @method static UserSecurityStateBuilder whereBlockedUntil($value)
+ * @method static UserSecurityStateBuilder whereLockoutCount($value)
+ * @method static UserSecurityStateBuilder whereName($value)
+ * @method static UserSecurityStateBuilder whereSecurityStatus($value)
+ * @method static UserSecurityStateBuilder whereUserEmail($value)
+ * @method static UserSecurityStateBuilder expiredBlocks()
+ * @method static UserSecurityStateBuilder onlyBlocked()
+ * @method static UserSecurityStateBuilder orderByRecent()
+ * @method static UserSecurityStateBuilder search(string $term)
+ * @method static UserSecurityStateBuilder withTimestamps()
+ * @method static array{total_users: int, normal_users: int, temp_blocked_users: int, perm_blocked_users: int, manually_deactivated_users: int, avg_lockout_count: float} getSecurityStats()
  *
  * @mixin Eloquent
  */
@@ -50,7 +56,7 @@ use Modules\Auth\Builders\UserSecurityStateBuilder;
 
 class UserSecurityState extends Model
 {
-    // Como Llave Primaria el Id del usuario
+    // Como Llave Primaria el ID del usuario
     protected $primaryKey = 'user_email';
 
     // Tipo de Primary Key
@@ -74,14 +80,13 @@ class UserSecurityState extends Model
     }
 
     /**
-     * Sobrescribir query() para retornar el Custom Builder
+     * Registrar el Custom Builder para que Eloquent lo use en todas las queries
      *
-     * Esto permite el tipado correcto para PHPStan sin necesidad de @method
+     * @param  QueryBuilder  $query
      */
-    public static function query(): UserSecurityStateBuilder
+    public function newEloquentBuilder($query): UserSecurityStateBuilder
     {
-        /** @var UserSecurityStateBuilder */
-        return parent::query();
+        return new UserSecurityStateBuilder($query);
     }
 
     // ============================================

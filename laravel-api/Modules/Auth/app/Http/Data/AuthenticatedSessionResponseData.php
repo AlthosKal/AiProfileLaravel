@@ -10,9 +10,9 @@ use Modules\Auth\Enums\AuthStatusCode;
  * Expone el token Sanctum y el estado post-login con claves semánticas
  * para que el frontend pueda reaccionar de manera apropiada:
  *
- *   - token:                  Bearer token para incluir en Authorization header
- *   - twoFactorCode:          redirigir al desafío 2FA
- *   - emailVerificationCode:  redirigir a verificación de email
+ *   - token: Bearer token para incluir en Authorization header
+ *   - twoFactorCode: redirigir al desafío 2FA
+ *   - emailVerificationCode: redirigir a verificación de email
  *   - passwordExpirationCode: mostrar advertencia de contraseña próxima a vencer
  */
 final readonly class AuthenticatedSessionResponseData
