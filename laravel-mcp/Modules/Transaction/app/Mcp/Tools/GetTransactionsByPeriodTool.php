@@ -12,8 +12,8 @@ use Laravel\Mcp\Server\Attributes\Title;
 use Laravel\Mcp\Server\Tool;
 use Modules\Shared\Security\GatewayUser;
 use Modules\Transaction\Actions\GetTransactionsAction;
-use Modules\Transaction\Http\Data\GetTransactionsByConditionResponseData;
-use Modules\Transaction\Http\Data\GetTransactionsByPeriodRequestData;
+use Modules\Transaction\Http\Data\Request\GetTransactionsByPeriodRequestData;
+use Modules\Transaction\Http\Data\Response\GetTransactionsByConditionResponseData;
 
 /**
  * *Descripción:**
@@ -24,21 +24,21 @@ use Modules\Transaction\Http\Data\GetTransactionsByPeriodRequestData;
  *  `date_from`: Fecha inicial del rango.
  *  `date_to`: Fecha final del rango.
  *
- * *Descripción extendida (opcional):**
+ * *Descripción extendida:**
  * Obtiene los ingresos y egresos comprendidos entre la fecha `date_from` y la fecha `date_to`, inclusive.
  */
-#[Title('Get Incomes and Expenses within for date range')]
+#[Title('Get Transactions within for date range')]
 #[Description('
 **Description:**
-Returns income and expenses within a specified date range.
+Returns transactions within a specified date range.
 
 **Parameters:**
 
 * `date_from`: Start date of the range.
 * `date_to`: End date of the range.
 
-**Extended description (optional):**
-Retrieves income and expenses between `date_from` and `date_to`, inclusive.
+**Extended description:**
+Retrieves transactions between `date_from` and `date_to`, inclusive.
 ')]
 class GetTransactionsByPeriodTool extends Tool
 {

@@ -1,6 +1,6 @@
 <?php
 
-namespace Modules\Transaction\Http\Data;
+namespace Modules\Transaction\Http\Data\Response;
 
 use Spatie\LaravelData\Data;
 

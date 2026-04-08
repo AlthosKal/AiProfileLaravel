@@ -8,13 +8,38 @@ use Laravel\Mcp\Request;
 use Laravel\Mcp\Response;
 use Laravel\Mcp\ResponseFactory;
 use Laravel\Mcp\Server\Attributes\Description;
+use Laravel\Mcp\Server\Attributes\Title;
 use Laravel\Mcp\Server\Tool;
 use Modules\Shared\Security\GatewayUser;
 use Modules\Transaction\Actions\GetTransactionsAction;
-use Modules\Transaction\Http\Data\GetTransactionsByAmountRangeRequestData;
-use Modules\Transaction\Http\Data\GetTransactionsByConditionResponseData;
+use Modules\Transaction\Http\Data\Request\GetTransactionsByAmountRangeRequestData;
+use Modules\Transaction\Http\Data\Response\GetTransactionsByConditionResponseData;
 
-#[Description('A description of what this tool does.')]
+/**
+ * *Descripción:**
+ * Retorna los ingresos y egresos dentro de un rango de montos especificado.
+ *
+ * *Parámetros:**
+ *
+ *  `amount_from`: Monto inicial del rango.
+ *  `amount_to`: Monto final del rango.
+ *
+ * *Descripción extendida:**
+ * Obtiene los ingresos y egresos comprendidos entre el monto `amount_from` y el monto `amount_to`, inclusive.
+ */
+#[Title('Get Transactions within for amount range')]
+#[Description('
+**Description:**
+Returns transactions within a specified amount range.
+
+**Parameters:**
+
+* `amount_from`: Start amount of the range.
+* `amount_to`: End amount of the range.
+
+**Extended description:**
+Retrieves transactions between `amount_from` and `amount_to`, inclusive.
+')]
 class GetTransactionsByAmountRangeTool extends Tool
 {
     public function __construct(

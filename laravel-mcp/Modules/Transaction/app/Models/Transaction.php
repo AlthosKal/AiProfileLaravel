@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
+use Modules\Shared\Security\GatewayUser;
 use Modules\Transaction\Database\Factories\TransactionFactory;
 
 /**
@@ -24,6 +25,7 @@ use Modules\Transaction\Database\Factories\TransactionFactory;
  * @method static Builder<static>|Transaction newModelQuery()
  * @method static Builder<static>|Transaction newQuery()
  * @method static Builder<static>|Transaction query()
+ * @method static Builder<static>|Transaction forUser(GatewayUser $user)
  *
  * @mixin Eloquent
  */
@@ -62,5 +64,16 @@ class Transaction extends Model
     public function getRouteKeyName(): string
     {
         return 'user_email';
+    }
+
+    /**
+     * Filtra las transacciones del usuario autenticado y selecciona los campos relevantes.
+     *
+     * @param  Builder<Transaction>  $query
+     */
+    public function scopeForUser(Builder $query, GatewayUser $user): void
+    {
+        $query->select(['name', 'amount', 'description', 'type', 'created_at', 'updated_at'])
+            ->where('user_email', $user->email);
     }
 }

@@ -1,18 +1,19 @@
 <?php
 
-namespace Modules\Transaction\Http\Data;
+namespace Modules\Transaction\Http\Data\Response;
 
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Illuminate\JsonSchema\Types\Type;
+use Modules\Transaction\Http\Data\TransactionData;
 use Spatie\LaravelData\Data;
 
 class GetTransactionsByConditionResponseData extends Data
 {
     /**
-     * @param  array<int, mixed>  $transaction_data
+     * @param  array<int, mixed>  $data
      */
     public function __construct(
-        public array $transaction_data,
+        public array $data,
         public int $transaction_count,
         public float $total_amount,
     ) {}

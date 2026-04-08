@@ -33,7 +33,11 @@ class TransactionController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $response = $this->client->getAll($request->user()->email);
+        $response = $this->client->getAll(
+            email: $request->user()->email,
+            perPage: (int) $request->query('per_page', 15),
+            page: (int) $request->query('page', 1),
+        );
 
         return response()->json($response->json(), $response->status());
     }

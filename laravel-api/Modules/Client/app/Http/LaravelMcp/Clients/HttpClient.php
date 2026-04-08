@@ -25,9 +25,12 @@ readonly class HttpClient
     /**
      * @throws ConnectionException
      */
-    public function getAll(string $email): Response
+    public function getAll(string $email, int $perPage = 15, int $page = 1): Response
     {
-        return $this->request($email)->get($this->url('transactions'));
+        return $this->request($email)->get($this->url('transactions'), [
+            'per_page' => $perPage,
+            'page' => $page,
+        ]);
     }
 
     /**
@@ -102,6 +105,6 @@ readonly class HttpClient
 
     private function url(string $path): string
     {
-        return rtrim(config('services.laravel-mcp.url'), '/').'HttpClient.php/'.ltrim($path, '/');
+        return rtrim(config('services.laravel-mcp.url'), '/').'/v1/'.ltrim($path, '/');
     }
 }

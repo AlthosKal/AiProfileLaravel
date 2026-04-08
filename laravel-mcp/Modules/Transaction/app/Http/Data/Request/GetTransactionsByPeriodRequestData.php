@@ -1,6 +1,6 @@
 <?php
 
-namespace Modules\Transaction\Http\Data;
+namespace Modules\Transaction\Http\Data\Request;
 
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Illuminate\JsonSchema\Types\Type;
