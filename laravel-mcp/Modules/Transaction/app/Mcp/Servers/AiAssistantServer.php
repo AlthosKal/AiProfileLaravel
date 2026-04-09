@@ -6,6 +6,9 @@ use Laravel\Mcp\Server;
 use Laravel\Mcp\Server\Attributes\Instructions;
 use Laravel\Mcp\Server\Attributes\Name;
 use Laravel\Mcp\Server\Attributes\Version;
+use Modules\Transaction\Mcp\Resources\ExcelDocumentSkillResource;
+use Modules\Transaction\Mcp\Resources\PdfDocumentSkillResource;
+use Modules\Transaction\Mcp\Tools\ExecuteDocumentScriptTool;
 use Modules\Transaction\Mcp\Tools\GetAllTransactionsTool;
 use Modules\Transaction\Mcp\Tools\GetTransactionByTypeTool;
 use Modules\Transaction\Mcp\Tools\GetTransactionsByAmountRangeTool;
@@ -26,10 +29,12 @@ class AiAssistantServer extends Server
         GetTransactionsByAmountRangeTool::class,
         GetAllTransactionsTool::class,
         GetTransactionByTypeTool::class,
+        ExecuteDocumentScriptTool::class,
     ];
 
     protected array $resources = [
-        //
+        PdfDocumentSkillResource::class,
+        ExcelDocumentSkillResource::class,
     ];
 
     protected array $prompts = [

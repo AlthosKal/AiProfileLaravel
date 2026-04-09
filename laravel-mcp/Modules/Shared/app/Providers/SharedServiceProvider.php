@@ -2,6 +2,7 @@
 
 namespace Modules\Shared\Providers;
 
+use Modules\Shared\Sandbox\SandboxJobRunner;
 use Nwidart\Modules\Support\ModuleServiceProvider;
 
 class SharedServiceProvider extends ModuleServiceProvider
@@ -24,6 +25,15 @@ class SharedServiceProvider extends ModuleServiceProvider
     // protected array $commands = [];
 
     public function boot(): void {}
+
+    public function register(): void
+    {
+        parent::register();
+
+        $this->app->singleton(SandboxJobRunner::class, fn () => new SandboxJobRunner(
+            hostJobsPath: config('app.sandbox.jobs_path'),
+        ));
+    }
 
     /**
      * Provider classes to register.

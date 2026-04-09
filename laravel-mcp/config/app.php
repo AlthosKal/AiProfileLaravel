@@ -136,4 +136,7 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
+    'sandbox' => [
+        'jobs_path' => env('SANDBOX_JOBS_PATH'),
+    ],
 ];

@@ -12,9 +12,21 @@ use Modules\Transaction\Models\Transaction;
 use PhpOffice\PhpSpreadsheet\Style\NumberFormat;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-/** @implements WithMapping<Transaction> */
+/**
+ * Sheet de exportación del módulo Transaction.
+ *
+ * Define qué datos se exportan (query con filtros de fecha) y cómo se
+ * representan en el archivo (columnas, encabezados, estilos y formatos).
+ * Es el único archivo de exportación que conoce el dominio Transaction.
+ *
+ * @implements WithMapping<Transaction>
+ */
 readonly class TransactionExportSheet implements FromQuery, WithColumnFormatting, WithHeadings, WithMapping, WithStyles
 {
+    /**
+     * @param  string  $dateFrom  Fecha de inicio del rango (Y-m-d).
+     * @param  string  $dateTo  Fecha de fin del rango (Y-m-d).
+     */
     public function __construct(
         private string $dateFrom,
         private string $dateTo,
@@ -29,11 +41,7 @@ readonly class TransactionExportSheet implements FromQuery, WithColumnFormatting
             ->orderByDesc('id');
     }
 
-    /**
-     * Define los encabezados del Excel
-     *
-     * @return array<int, string>
-     */
+    /** @return array<int, string> */
     public function headings(): array
     {
         return [
@@ -62,11 +70,7 @@ readonly class TransactionExportSheet implements FromQuery, WithColumnFormatting
         ];
     }
 
-    /**
-     * Define los encabezados del Excel
-     *
-     * @return array<int, mixed>
-     */
+    /** @return array<int, mixed> */
     public function styles(Worksheet $sheet): array
     {
         return [
@@ -74,11 +78,7 @@ readonly class TransactionExportSheet implements FromQuery, WithColumnFormatting
         ];
     }
 
-    /**
-     * Define los encabezados del Excel
-     *
-     * @return array<string, string>
-     */
+    /** @return array<string, string> */
     public function columnFormats(): array
     {
         return [

@@ -283,7 +283,7 @@ return [
     |--------------------------------------------------------------------------
     |
     | Define default return types for macros without explicit return types.
-    | e.g. `\Illuminate\Database\Query\Builder::class => 'static'`,
+    | e.g. `\Illuminate\Database\Query\Builders::class => 'static'`,
     |      `\Illuminate\Support\Str::class => 'string'`
     |
     */
@@ -374,5 +374,4 @@ return [
     'post_migrate' => [
         // 'ide-helper:models --nowrite',
     ],
-
 ];

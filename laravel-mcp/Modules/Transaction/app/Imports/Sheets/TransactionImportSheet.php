@@ -7,8 +7,19 @@ use Maatwebsite\Excel\Concerns\WithValidation;
 use Modules\Transaction\Enums\TransactionType;
 use Modules\Transaction\Models\Transaction;
 
+/**
+ * Sheet de importación del módulo Transaction.
+ *
+ * Define cómo se mapea cada fila del archivo al modelo Transaction y las
+ * reglas de validación que debe cumplir cada celda antes de persistirse.
+ * El email del usuario autenticado se inyecta por constructor para asociar
+ * cada registro importado a su propietario, sin requerirlo en el archivo.
+ */
 readonly class TransactionImportSheet implements ToModel, WithValidation
 {
+    /**
+     * @param  string  $userEmail  Email del usuario autenticado extraído del request.
+     */
     public function __construct(private string $userEmail) {}
 
     /** @param array<int, mixed> $row */

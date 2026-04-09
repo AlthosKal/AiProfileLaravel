@@ -192,6 +192,88 @@ services:
           cpus: '0.1'
           memory: 256M
 
+  #9. MinIO - S3 Compatible Object Storage para Laravel, especificamente almacenando archivos (PDFs, documentos, etc.)
+  laravel-mcp-minio:
+    image: quay.io/minio/minio:latest
+    container_name: laravel-mcp-minio
+    command: server /data --console-address ":9001"
+    env_file:
+      - .env.docker.minio
+    ports:
+      - "9002:9000"      # API S3 (mapeado a 9002 porque Portainer usa 9000)
+      - "9003:9001"      # Consola Web UI (mapeado a 9003)
+    volumes:
+      - laravel_api_minio_data:/data
+    networks:
+      - laravel_api_network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+      start_period: 20s
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+
+  #10. MinIO Client - Inicialización automática de buckets
+  laravel-mcp-minio-init:
+    image: quay.io/minio/mc:latest
+    container_name: laravel-mcp-minio-init
+    depends_on:
+      laravel-mcp-minio:
+        condition: service_healthy
+    networks:
+      - laravel_api_network
+    env_file:
+      - .env.docker.minio
+    entrypoint: >
+      /bin/sh -c "
+      echo 'Esperando a que MinIO esté listo...';
+      sleep 10;
+      echo 'Configurando alias de MinIO...';
+      /usr/bin/mc alias set myminio http://sigest-legal-minio:9000 $$MINIO_ACCESS_KEY $$MINIO_SECRET_KEY;
+      echo 'Creando bucket laravel-bucket...';
+      /usr/bin/mc mb myminio/laravel-bucket --ignore-existing;
+      echo 'Configurando política de acceso...';
+      /usr/bin/mc anonymous set download myminio/laravel-bucket;
+      echo 'MinIO configurado correctamente';
+      exit 0;
+      "
+
+  # 11. Python Sandbox — ejecución aislada de scripts generados por la IA
+  mcp-sandbox-python:
+    build:
+      context: ./docker/sandbox-python
+      dockerfile: Dockerfile
+    image: mcp-sandbox-python:latest
+    container_name: mcp-sandbox-python
+    # Sin red: el sandbox no puede hacer llamadas salientes
+    network_mode: none
+    # Sin acceso al filesystem del host salvo el volumen de jobs
+    read_only: true
+    tmpfs:
+      - /tmp:size=64m,mode=1777
+    volumes:
+      - mcp_sandbox_jobs:/sandbox/jobs
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 128M
+    # El contenedor permanece activo; los jobs se lanzan con docker exec
+    command: sleep infinity
+    restart: unless-stopped
+
 networks:
   laravel_api_network:
     driver: bridge
@@ -206,10 +288,12 @@ networks:
       com.docker.network.driver.mtu: 1500
 
 volumes:
+  mcp_sandbox_jobs:
   laravel_api_redis_data:
   laravel_mcp_redis_data:
   laravel_api_postgresql_data:
   laravel_mcp_postgresql_data:
+  laravel_api_minio_data:
   laravel_api_logs:
   kafka_data:
     # Named volume para logs compartidos entre todas las réplicas

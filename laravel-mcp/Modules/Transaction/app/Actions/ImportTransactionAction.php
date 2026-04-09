@@ -5,6 +5,8 @@ namespace Modules\Transaction\Actions;
 use Illuminate\Http\UploadedFile;
 use Modules\Shared\Enums\ExportFormat;
 use Modules\Shared\Security\GatewayUser;
+use Modules\Shared\Stores\CloudObjectStorage;
+use Modules\Transaction\Builders\TransactionPathBuilder;
 use Modules\Transaction\Imports\Sheets\TransactionImportSheet;
 use Modules\Transaction\Imports\TransactionImporter;
 
@@ -18,10 +20,16 @@ readonly class ImportTransactionAction
 {
     public function import(ExportFormat $format, UploadedFile $file, GatewayUser $user): void
     {
+        // Importar el archivo al sistema
         $sheet = new TransactionImportSheet($user->email);
         $strategy = $format->resolveImportStrategy($sheet);
         $importer = new TransactionImporter($strategy);
 
         $importer->import($file);
+
+        // El path se construye desde el contenido del archivo (hash SHA-256),
+        // nunca desde el nombre provisto por el cliente.
+        $path = TransactionPathBuilder::buildFromFile($file);
+        CloudObjectStorage::store($path, $file);
     }
 }
