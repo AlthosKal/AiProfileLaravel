@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Modules\Client\Http\Clients\HttpClient;
+use Modules\Client\Http\LaravelMcp\Clients\HttpClient;
 use Modules\Shared\Traits\JsonResponseTrait;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 

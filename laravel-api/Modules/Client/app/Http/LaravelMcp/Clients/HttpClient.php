@@ -1,6 +1,6 @@
 <?php
 
-namespace Modules\Client\Http\Clients;
+namespace Modules\Client\Http\LaravelMcp\Clients;
 
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\PendingRequest;
