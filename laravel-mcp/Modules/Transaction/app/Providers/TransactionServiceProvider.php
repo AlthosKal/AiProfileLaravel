@@ -3,6 +3,7 @@
 namespace Modules\Transaction\Providers;
 
 use Illuminate\Console\Scheduling\Schedule;
+use Modules\Transaction\Console\Commands\ConsumeGenerateDocumentCommand;
 use Nwidart\Modules\Support\ModuleServiceProvider;
 
 class TransactionServiceProvider extends ModuleServiceProvider
@@ -22,7 +23,9 @@ class TransactionServiceProvider extends ModuleServiceProvider
      *
      * @var string[]
      */
-    // protected array $commands = [];
+    protected array $commands = [
+        ConsumeGenerateDocumentCommand::class,
+    ];
 
     /**
      * Provider classes to register.
