@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Modules\Client\Http\Ai\Controllers\AgentController;
 use Modules\Client\Http\LaravelMcp\Transaction\Controllers\TransactionController;
 use Modules\Shared\Enums\MiddlewaresFramework;
 
@@ -11,4 +12,7 @@ Route::middleware([MiddlewaresFramework::with(MiddlewaresFramework::AUTH, 'sanct
         ->name('transactions.import');
     Route::apiResource('transactions', TransactionController::class)
         ->names('api.transactions');
+
+    Route::post('agent/prompt', [AgentController::class, 'prompt'])
+        ->name('agent.prompt');
 });
