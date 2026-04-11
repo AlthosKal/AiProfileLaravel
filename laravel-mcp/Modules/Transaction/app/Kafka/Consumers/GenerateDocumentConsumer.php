@@ -2,149 +2,85 @@
 
 namespace Modules\Transaction\Kafka\Consumers;
 
-use DateTimeZone;
+use Exception;
 use Illuminate\Support\Facades\Log;
 use Junges\Kafka\Contracts\ConsumerMessage;
 use Junges\Kafka\Contracts\Handler;
 use Junges\Kafka\Contracts\MessageConsumer;
 use Junges\Kafka\Facades\Kafka;
-use Lcobucci\Clock\SystemClock;
-use Lcobucci\JWT\Configuration;
-use Lcobucci\JWT\Signer\Key\InMemory;
-use Lcobucci\JWT\Signer\Rsa\Sha256;
-use Lcobucci\JWT\Token\Plain;
-use Lcobucci\JWT\Validation\Constraint\IssuedBy;
-use Lcobucci\JWT\Validation\Constraint\LooseValidAt;
-use Lcobucci\JWT\Validation\Constraint\SignedWith;
-use Modules\Shared\Builders\SandboxPathBuilder;
-use Modules\Shared\Sandbox\SandboxJobRunner;
-use Modules\Shared\Stores\CloudObjectStorage;
-use Throwable;
+use Modules\Shared\Actions\ExecuteSandboxAction;
+use Modules\Shared\Enums\JobErrorType;
+use Modules\Shared\Http\Data\ExecuteSandboxRequestData;
+use Modules\Shared\Security\GatewayUser;
+use Modules\Shared\Security\InternalJwtValidator;
+use Modules\Transaction\Http\Data\GenerateDocumentRequestData;
 
 /**
  * Consume solicitudes de generación de documentos desde laravel-api.
  *
  * Escucha el topic ai-profile.business.commands. Por cada mensaje:
- *   1. Valida el JWT RS256 interno del payload (emitido por laravel-api)
- *   2. Ejecuta el script Python en el sandbox Docker via SandboxJobRunner
- *   3. Sube el archivo generado a CloudObjectStorage (MinIO)
- *   4. Publica la URL de descarga en ai-profile.business.responses
+ *   1. Válida el JWT RS256 interno del payload (emitido por laravel-api)
+ *   2. Ejecuta el script Python en el sandbox via ExecuteSandboxAction
+ *   3. Publica el resultado (URL o error) en ai-profile.business.responses
  *
- * Estructura esperada del payload:
- * {
- *   "correlation_id": "uuid-v4",
- *   "jwt": "eyJ...",
- *   "code": "import os\n...",
- *   "output_filename": "reporte.pdf"
- * }
+ * La validación del JWT es necesaria en este contexto porque el consumer
+ * corre fuera del ciclo HTTP — no existe guard ni middleware que lo haga.
+ * En requests HTTP la válida JwtGatewayGuard automáticamente.
  */
 final class GenerateDocumentConsumer implements Handler
 {
     private const string RESPONSE_TOPIC = 'ai-profile.business.responses';
 
     public function __construct(
-        private readonly SandboxJobRunner $runner,
+        private readonly ExecuteSandboxAction $action,
+        private readonly InternalJwtValidator $jwtValidator,
     ) {}
 
+    /**
+     * @throws Exception
+     */
     public function __invoke(ConsumerMessage $message, MessageConsumer $consumer): void
     {
-        $body = $message->getBody();
+        $data = GenerateDocumentRequestData::from($message->getBody());
 
-        if (! is_array($body)) {
-            Log::warning('GenerateDocumentConsumer: payload inválido', ['body' => $body]);
+        $email = $this->jwtValidator->validate($data->jwt);
 
-            return;
-        }
-
-        $correlationId = $body['correlation_id'] ?? null;
-        $jwt = $body['jwt'] ?? null;
-        $code = $body['code'] ?? null;
-        $outputFilename = $body['output_filename'] ?? null;
-
-        if (blank($correlationId) || blank($jwt) || blank($code) || blank($outputFilename)) {
-            Log::warning('GenerateDocumentConsumer: campos requeridos faltantes', [
-                'correlation_id' => $correlationId,
-            ]);
-
-            return;
-        }
-
-        if (! $this->validateJwt($jwt)) {
+        if ($email === null) {
             Log::warning('GenerateDocumentConsumer: JWT inválido o expirado', [
-                'correlation_id' => $correlationId,
+                'correlation_id' => $data->correlation_id,
             ]);
 
             return;
         }
 
-        try {
-            $this->process($correlationId, $code, $outputFilename);
-        } catch (Throwable $e) {
-            Log::error('GenerateDocumentConsumer: error procesando documento', [
-                'correlation_id' => $correlationId,
-                'error' => $e->getMessage(),
-            ]);
-        }
-    }
+        $sandboxData = new ExecuteSandboxRequestData(
+            code: $data->code,
+            output_file_name: $data->output_filename,
+        );
 
-    private function process(string $correlationId, string $code, string $outputFilename): void
-    {
-        $job = $this->runner->run($code, $outputFilename);
+        $result = $this->action->execute($sandboxData, new GatewayUser(email: $email));
 
-        if (! $job->succeeded() || ! $job->hasOutput()) {
-            Log::warning('GenerateDocumentConsumer: sandbox falló o sin output', [
-                'correlation_id' => $correlationId,
-                'exit_code' => $job->exitCode,
-                'stdout' => $job->stdout,
+        if ($result->errorType !== JobErrorType::NO_ERROR) {
+            Log::warning('GenerateDocumentConsumer: sandbox falló', [
+                'correlation_id' => $data->correlation_id,
+                'error_type' => $result->errorType->value,
+                'error_message' => $result->errorMessage,
             ]);
 
             return;
         }
-
-        $storagePath = SandboxPathBuilder::buildForJob($job->jobId, $outputFilename);
-        CloudObjectStorage::storeFromPath($storagePath, $job->outputPath);
-        $downloadUrl = CloudObjectStorage::temporaryUrl($storagePath, minutes: 10);
 
         Kafka::publish()
             ->onTopic(self::RESPONSE_TOPIC)
-            ->withBodyKey('correlation_id', $correlationId)
-            ->withBodyKey('download_url', $downloadUrl)
-            ->withBodyKey('filename', $outputFilename)
-            ->withBodyKey('expires_in_minutes', 10)
+            ->withBodyKey('correlation_id', $data->correlation_id)
+            ->withBodyKey('download_url', $result->downloadUrl)
+            ->withBodyKey('filename', $result->fileName)
+            ->withBodyKey('expires_in_minutes', $result->expiredInMinutes)
             ->send();
 
         Log::info('GenerateDocumentConsumer: documento generado y respuesta publicada', [
-            'correlation_id' => $correlationId,
-            'filename' => $outputFilename,
+            'correlation_id' => $data->correlation_id,
+            'filename' => $result->fileName,
         ]);
-    }
-
-    /**
-     * Valida el JWT RS256 interno emitido por laravel-api.
-     * Usa la clave pública de Passport para verificar la firma.
-     */
-    private function validateJwt(string $token): bool
-    {
-        try {
-            $config = Configuration::forAsymmetricSigner(
-                new Sha256,
-                InMemory::plainText('empty'),
-                InMemory::plainText(config('passport.public_key')),
-            );
-
-            $parsed = $config->parser()->parse($token);
-            assert($parsed instanceof Plain);
-
-            $config->validator()->assert(
-                $parsed,
-                new SignedWith($config->signer(), $config->verificationKey()),
-                new LooseValidAt(new SystemClock(new DateTimeZone('UTC'))),
-                new IssuedBy(config('app.internal_api_url')),
-            );
-
-            return true;
-        } catch (Throwable) {
-            return false;
-        }
     }
 }

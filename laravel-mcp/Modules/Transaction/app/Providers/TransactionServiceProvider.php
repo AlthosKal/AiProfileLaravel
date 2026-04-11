@@ -2,8 +2,6 @@
 
 namespace Modules\Transaction\Providers;
 
-use Illuminate\Console\Scheduling\Schedule;
-use Modules\Transaction\Console\Commands\ConsumeGenerateDocumentCommand;
 use Nwidart\Modules\Support\ModuleServiceProvider;
 
 class TransactionServiceProvider extends ModuleServiceProvider
@@ -19,15 +17,6 @@ class TransactionServiceProvider extends ModuleServiceProvider
     protected string $nameLower = 'transaction';
 
     /**
-     * Command classes to register.
-     *
-     * @var string[]
-     */
-    protected array $commands = [
-        ConsumeGenerateDocumentCommand::class,
-    ];
-
-    /**
      * Provider classes to register.
      *
      * @var string[]
@@ -36,14 +25,4 @@ class TransactionServiceProvider extends ModuleServiceProvider
         EventServiceProvider::class,
         RouteServiceProvider::class,
     ];
-
-    /**
-     * Define module schedules.
-     *
-     * @param  $schedule
-     */
-    // protected function configureSchedules(Schedule $schedule): void
-    // {
-    //     $schedule->command('inspire')->hourly();
-    // }
 }
