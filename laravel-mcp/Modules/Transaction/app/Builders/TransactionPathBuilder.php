@@ -33,4 +33,15 @@ class TransactionPathBuilder implements ObjectPathBuilder
 
         return 'transactions/imports/'.$hash.'.'.$extension;
     }
+
+    /**
+     * Build a deterministic storage path for a transaction export file.
+     *
+     * @param  string  $filename  Base filename without extension (e.g. "transacciones-2026-01-01-2026-01-31").
+     * @param  string  $extension  File extension resolved from the export format (e.g. "xlsx", "csv").
+     */
+    public static function buildForExport(string $filename, string $extension): string
+    {
+        return 'transactions/exports/'.$filename.'.'.$extension;
+    }
 }

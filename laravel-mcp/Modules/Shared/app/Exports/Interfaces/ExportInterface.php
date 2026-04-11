@@ -19,4 +19,12 @@ interface ExportInterface
      * @param  string  $filename  Nombre base del archivo sin extensión.
      */
     public function export(string $filename): BinaryFileResponse;
+
+    /**
+     * Almacena el archivo generado en el disco indicado (e.g. S3/MinIO).
+     *
+     * @param  string  $path  Path completo de destino dentro del disco.
+     * @param  string  $disk  Nombre del disco de Laravel (e.g. 's3', 'local').
+     */
+    public function store(string $path, string $disk): void;
 }

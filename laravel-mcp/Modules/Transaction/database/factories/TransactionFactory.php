@@ -26,7 +26,7 @@ class TransactionFactory extends Factory
             'user_email' => $this->faker->safeEmail(),
             'amount' => $this->faker->randomFloat(2, 10),
             'description' => $this->faker->text(),
-            'type' => $this->faker->randomElement([TransactionType::cases()]),
+            'type' => $this->faker->randomElement(TransactionType::cases()),
         ];
     }
 }

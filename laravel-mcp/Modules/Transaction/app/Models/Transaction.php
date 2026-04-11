@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 use Modules\Shared\Security\GatewayUser;
 use Modules\Transaction\Database\Factories\TransactionFactory;
+use Modules\Transaction\Enums\TransactionType;
 
 /**
  * @property int $id
@@ -64,6 +65,7 @@ class Transaction extends Model
     public function casts(): array
     {
         return [
+            'type' => TransactionType::class,
             'created_at' => 'datetime',
             'updated_at' => 'datetime',
         ];

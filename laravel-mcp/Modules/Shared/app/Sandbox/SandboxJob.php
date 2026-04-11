@@ -12,15 +12,13 @@ final readonly class SandboxJob
 {
     /**
      * @param  string  $jobId  Identificador único del job (prefijo de ruta en MinIO).
-     * @param  string  $stdout  Salida estándar capturada del script.
-     * @param  string  $stderr  Salida de error capturada del script.
+     * @param  string  $stdout  Salida estándar y de error capturada del script (stderr redirigido a stdout vía 2>&1).
      * @param  int  $exitCode  Código de salida del proceso (0 = éxito).
      * @param  string  $outputPath  Ruta absoluta al archivo generado en el volumen de jobs, o vacío si no hubo output.
      */
     public function __construct(
         public string $jobId,
         public string $stdout,
-        public string $stderr,
         public int $exitCode,
         public string $outputPath,
     ) {}

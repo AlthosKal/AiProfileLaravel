@@ -4,6 +4,7 @@ namespace Modules\Shared\Sandbox;
 
 use Modules\Shared\Enums\SandboxJobConstantsEnum;
 use Modules\Shared\Enums\SandboxJobTimesEnum;
+use Modules\Shared\Http\Data\ExecuteSandboxRequestData;
 
 /**
  * Ejecuta scripts Python dentro del contenedor sandbox de forma aislada.
@@ -23,11 +24,8 @@ readonly class SandboxJobRunner
 
     /**
      * Ejecuta el código Python dado y devuelve el resultado del job.
-     *
-     * @param  string  $code  Código Python a ejecutar.
-     * @param  string  $outputFilename  Nombre del archivo que el script debe escribir en /sandbox/jobs/{jobId}/output/.
      */
-    public function run(string $code, string $outputFilename): SandboxJob
+    public function run(ExecuteSandboxRequestData $data): SandboxJob
     {
         $jobId = uniqid('job_', more_entropy: true);
         $hostJobDir = "$this->hostJobsPath/$jobId";
@@ -37,12 +35,11 @@ readonly class SandboxJobRunner
         mkdir($hostOutputDir, 0755, true);
 
         $scriptHostPath = "$hostJobDir/script.py";
-        file_put_contents($scriptHostPath, $code);
+        file_put_contents($scriptHostPath, $data->code);
 
         $containerScriptPath = SandboxJobConstantsEnum::CONTAINER_JOBS_PATH->value."/$jobId/script.py";
         $containerOutputDir = SandboxJobConstantsEnum::CONTAINER_JOBS_PATH->value."/$jobId/output";
 
-        // Inyectar OUTPUT_DIR como variable de entorno para que el script sepa dónde escribir
         $fullCommand = sprintf(
             'docker exec --user sandbox -e OUTPUT_DIR=%s %s timeout %d python %s 2>&1',
             escapeshellarg($containerOutputDir),
@@ -52,14 +49,12 @@ readonly class SandboxJobRunner
         );
 
         exec($fullCommand, $outputLines, $exitCode);
-        $output = implode("\n", $outputLines);
 
-        $outputPath = "$hostOutputDir/$outputFilename";
+        $outputPath = "$hostOutputDir/$data->output_file_name";
 
         return new SandboxJob(
             jobId: $jobId,
-            stdout: $output,
-            stderr: '',
+            stdout: implode("\n", $outputLines),
             exitCode: $exitCode,
             outputPath: file_exists($outputPath) ? $outputPath : '',
         );

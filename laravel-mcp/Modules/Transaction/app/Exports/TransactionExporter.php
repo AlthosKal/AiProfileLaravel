@@ -22,4 +22,9 @@ readonly class TransactionExporter
     {
         return $this->strategy->export($filename);
     }
+
+    public function store(string $path, string $disk): void
+    {
+        $this->strategy->store($path, $disk);
+    }
 }

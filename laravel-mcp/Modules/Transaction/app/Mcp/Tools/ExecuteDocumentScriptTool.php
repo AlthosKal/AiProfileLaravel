@@ -10,9 +10,11 @@ use Laravel\Mcp\ResponseFactory;
 use Laravel\Mcp\Server\Attributes\Description;
 use Laravel\Mcp\Server\Attributes\Title;
 use Laravel\Mcp\Server\Tool;
-use Modules\Shared\Builders\SandboxPathBuilder;
-use Modules\Shared\Sandbox\SandboxJobRunner;
-use Modules\Shared\Stores\CloudObjectStorage;
+use Modules\Shared\Actions\ExecuteSandboxAction;
+use Modules\Shared\Enums\JobErrorType;
+use Modules\Shared\Http\Data\ExecuteSandboxRequestData;
+use Modules\Shared\Http\Data\ExecuteSandboxResponseData;
+use Modules\Shared\Security\GatewayUser;
 
 /**
  * Ejecuta un script Python en el sandbox aislado y devuelve una URL de descarga
@@ -51,48 +53,26 @@ pre-signed download URL is returned. On failure, the script\'s error output is r
 class ExecuteDocumentScriptTool extends Tool
 {
     public function __construct(
-        private readonly SandboxJobRunner $runner,
+        private readonly ExecuteSandboxAction $action,
     ) {}
 
     /**
      * Handle the tool request.
      */
-    public function handle(Request $request): ResponseFactory
+    public function handle(Request $request, ExecuteSandboxRequestData $data): ResponseFactory
     {
-        $code = $request->get('code');
-        $outputFilename = $request->get('output_filename');
+        /** @var GatewayUser $user */
+        $user = $request->user();
+        $result = $this->action->execute($data, $user);
 
-        if (blank($code) || blank($outputFilename)) {
-            return Response::make(
-                Response::text('Parameters `code` and `output_filename` are required.')
-            );
-        }
-
-        $job = $this->runner->run($code, $outputFilename);
-
-        if (! $job->succeeded()) {
-            return Response::make(
-                Response::text("Script execution failed (exit code $job->exitCode):\n$job->stdout")
-            );
-        }
-
-        if (! $job->hasOutput()) {
-            return Response::make(
-                Response::text("Script succeeded but did not produce the expected file '$outputFilename'. stdout:\n$job->stdout")
-            );
-        }
-
-        $storagePath = SandboxPathBuilder::buildForJob($job->jobId, $outputFilename);
-        CloudObjectStorage::storeFromPath($storagePath, $job->outputPath);
-        $downloadUrl = CloudObjectStorage::temporaryUrl($storagePath, minutes: 10);
-
-        return Response::make(
-            Response::text("Document generated successfully. Download URL (valid 10 minutes):\n$downloadUrl")
-        )->withStructuredContent([
-            'download_url' => $downloadUrl,
-            'filename' => $outputFilename,
-            'expires_in_minutes' => 10,
-        ]);
+        return match ($result->errorType) {
+            JobErrorType::EXECUTION_FAILED, JobErrorType::GENERATED_FAILED => Response::make(
+                Response::text($result->errorMessage)
+            ),
+            JobErrorType::NO_ERROR => Response::make(
+                Response::text("Document generated successfully. Download URL (valid $result->expiredInMinutes minutes):\n$result->downloadUrl")
+            )->withStructuredContent($result->toArray()),
+        };
     }
 
     /**
@@ -102,13 +82,16 @@ class ExecuteDocumentScriptTool extends Tool
      */
     public function schema(JsonSchema $schema): array
     {
-        return [
-            'code' => $schema->string()->description(
-                'Python script to execute. Must write its output to os.path.join(os.environ["OUTPUT_DIR"], output_filename).'
-            ),
-            'output_filename' => $schema->string()->description(
-                'Name of the file the script generates (e.g. "report.pdf", "transactions.xlsx").'
-            ),
-        ];
+        return ExecuteSandboxRequestData::toolSchema($schema);
+    }
+
+    /**
+     * Get the tool's output schema.
+     *
+     * @return array<string, Type>
+     */
+    public function outputSchema(JsonSchema $schema): array
+    {
+        return ExecuteSandboxResponseData::toolSchema($schema);
     }
 }

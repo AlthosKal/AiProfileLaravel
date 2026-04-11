@@ -48,4 +48,13 @@ enum ExportFormat: string
             self::Csv => new CsvImportStrategy($sheet),
         };
     }
+
+    /** Returns the file extension associated with this export format. */
+    public function extension(): string
+    {
+        return match ($this) {
+            self::Excel => 'xlsx',
+            self::Csv => 'csv',
+        };
+    }
 }

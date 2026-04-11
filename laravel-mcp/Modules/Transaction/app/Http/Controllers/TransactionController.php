@@ -99,11 +99,12 @@ class TransactionController extends Controller
     /**
      * Exporta las transacciones del usuario en el formato y rango de fechas indicados.
      */
-    public function export(ExportTransactionRequest $export): BinaryFileResponse
+    public function export(ExportTransactionRequest $export, Request $request): BinaryFileResponse
     {
+        $user = $request->user();
         $format = ExportFormat::from($export->validated('format'));
 
-        return $this->exportAction->export($format, $export->validated('date_from'), $export->validated('date_to'));
+        return $this->exportAction->export($format, $export->validated('date_from'), $export->validated('date_to'), $user);
     }
 
     /**

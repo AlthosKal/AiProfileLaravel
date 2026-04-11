@@ -30,4 +30,13 @@ readonly class ExcelExportStrategy implements ExportInterface
     {
         return ExcelFacade::download($this->sheet, "$filename.xlsx", Excel::XLSX);
     }
+
+    /**
+     * @throws Exception
+     * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
+     */
+    public function store(string $path, string $disk): void
+    {
+        ExcelFacade::store($this->sheet, $path, $disk, Excel::XLSX);
+    }
 }
