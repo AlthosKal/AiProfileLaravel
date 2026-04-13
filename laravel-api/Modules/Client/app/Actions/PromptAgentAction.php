@@ -7,6 +7,7 @@ use Modules\Auth\Models\User;
 use Modules\Client\Ai\Agents\AiFinancialAssistant;
 use Modules\Client\Http\Ai\Data\PromptRequestData;
 use Modules\Client\Mcp\Client\AiAssistantMcpClient;
+use Modules\Client\Mcp\Client\TavilyMcpClient;
 
 /**
  * Orquesta el ciclo completo de un prompt al agente financiero.
@@ -21,13 +22,15 @@ readonly class PromptAgentAction
 {
     public function __construct(
         private AiAssistantMcpClient $mcpClient,
+        private TavilyMcpClient $tavilyMcpClient,
     ) {}
 
     public function execute(PromptRequestData $data, User $user): StreamableAgentResponse
     {
         $this->mcpClient->connectForUser($user->email);
+        $this->tavilyMcpClient->connectToTavily();
 
-        $agent = new AiFinancialAssistant($this->mcpClient);
+        $agent = new AiFinancialAssistant($this->mcpClient, $this->tavilyMcpClient);
 
         if ($data->conversation_id !== null) {
             $agent->continue($data->conversation_id, as: $user);

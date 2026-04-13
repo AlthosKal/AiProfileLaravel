@@ -16,7 +16,9 @@ use Laravel\Ai\Enums\Lab;
 use Laravel\Ai\Promptable;
 use Modules\Client\Ai\Middleware\PromptInjectionMiddleware;
 use Modules\Client\Mcp\Client\AiAssistantMcpClient;
+use Modules\Client\Mcp\Client\TavilyMcpClient;
 use Modules\Client\Mcp\Tools\McpToolRegistry;
+use Modules\Client\Mcp\Tools\TavilyToolRegistry;
 use Stringable;
 
 #[Provider(Lab::Anthropic)]
@@ -28,6 +30,7 @@ class AiFinancialAssistant implements Agent, Conversational, HasMiddleware, HasT
 
     public function __construct(
         private readonly AiAssistantMcpClient $mcpClient,
+        private readonly TavilyMcpClient $tavilyMcpClient,
     ) {}
 
     /**
@@ -47,17 +50,29 @@ class AiFinancialAssistant implements Agent, Conversational, HasMiddleware, HasT
      */
     public function tools(): iterable
     {
-        if (! $this->mcpClient->isConnected()) {
-            return [];
+        $tools = [];
+
+        if ($this->mcpClient->isConnected()) {
+            $internalTools = collect($this->mcpClient->listTools()->tools)
+                ->map(fn ($mcpTool) => McpToolRegistry::resolve($this->mcpClient, $mcpTool))
+                ->filter()
+                ->values()
+                ->all();
+
+            $tools = array_merge($tools, $internalTools);
         }
 
-        $result = $this->mcpClient->listTools();
+        if ($this->tavilyMcpClient->isConnected()) {
+            $tavilyTools = collect($this->tavilyMcpClient->listTools()->tools)
+                ->map(fn ($mcpTool) => TavilyToolRegistry::resolve($this->tavilyMcpClient, $mcpTool))
+                ->filter()
+                ->values()
+                ->all();
 
-        return collect($result->tools)
-            ->map(fn ($mcpTool) => McpToolRegistry::resolve($this->mcpClient, $mcpTool))
-            ->filter()
-            ->values()
-            ->all();
+            $tools = array_merge($tools, $tavilyTools);
+        }
+
+        return $tools;
     }
 
     /**

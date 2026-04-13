@@ -137,4 +137,9 @@ return [
         'request-timeout' => env('MCP_CLIENT-REQ-TIMEOUT', 120),
         'max-retries' => env('MCP_CLIENT-MAX-RETRIES', 3),
     ],
+
+    'tavily' => [
+        'api_key' => env('TAVILY_API_KEY'),
+        'url' => env('TAVILY_MCP_URL', 'https://mcp.tavily.com/mcp/'),
+    ],
 ];

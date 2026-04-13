@@ -4,6 +4,7 @@ namespace Modules\Client\Providers;
 
 use Modules\Client\Interface\McpClientInterface;
 use Modules\Client\Mcp\Client\AiAssistantMcpClient;
+use Modules\Client\Mcp\Client\TavilyMcpClient;
 use Nwidart\Modules\Support\ModuleServiceProvider;
 
 class ClientServiceProvider extends ModuleServiceProvider
@@ -41,5 +42,6 @@ class ClientServiceProvider extends ModuleServiceProvider
 
         $this->app->scoped(McpClientInterface::class, AiAssistantMcpClient::class);
         $this->app->scoped(AiAssistantMcpClient::class, AiAssistantMcpClient::class);
+        $this->app->scoped(TavilyMcpClient::class, TavilyMcpClient::class);
     }
 }
