@@ -3,12 +3,13 @@
 namespace Modules\Client\Mcp\Tools;
 
 use Mcp\Schema\Tool as McpTool;
-use Modules\Client\Ai\Tools\ExecuteDocumentScriptTool;
+use Modules\Client\Ai\Tools\CheckDocumentStatusTool;
 use Modules\Client\Ai\Tools\GetAllTransactionsTool;
 use Modules\Client\Ai\Tools\GetTransactionByTypeTool;
 use Modules\Client\Ai\Tools\GetTransactionsByAmountRangeTool;
 use Modules\Client\Ai\Tools\GetTransactionsByPeriodTool;
 use Modules\Client\Ai\Tools\McpProxyTool;
+use Modules\Client\Ai\Tools\RequestDocumentGenerationTool;
 use Modules\Client\Mcp\Client\AiAssistantMcpClient;
 
 /**
@@ -35,7 +36,8 @@ final class McpToolRegistry
         'GetTransactionsByPeriodTool' => GetTransactionsByPeriodTool::class,
         'GetTransactionsByAmountRangeTool' => GetTransactionsByAmountRangeTool::class,
         'GetTransactionByTypeTool' => GetTransactionByTypeTool::class,
-        'ExecuteDocumentScriptTool' => ExecuteDocumentScriptTool::class,
+        'RequestDocumentGenerationTool' => RequestDocumentGenerationTool::class,
+        'CheckDocumentStatusTool' => CheckDocumentStatusTool::class,
     ];
 
     /**

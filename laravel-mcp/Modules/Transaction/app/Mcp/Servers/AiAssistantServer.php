@@ -8,11 +8,12 @@ use Laravel\Mcp\Server\Attributes\Name;
 use Laravel\Mcp\Server\Attributes\Version;
 use Modules\Transaction\Mcp\Resources\ExcelDocumentSkillResource;
 use Modules\Transaction\Mcp\Resources\PdfDocumentSkillResource;
-use Modules\Transaction\Mcp\Tools\ExecuteDocumentScriptTool;
+use Modules\Transaction\Mcp\Tools\CheckDocumentStatusTool;
 use Modules\Transaction\Mcp\Tools\GetAllTransactionsTool;
 use Modules\Transaction\Mcp\Tools\GetTransactionByTypeTool;
 use Modules\Transaction\Mcp\Tools\GetTransactionsByAmountRangeTool;
 use Modules\Transaction\Mcp\Tools\GetTransactionsByPeriodTool;
+use Modules\Transaction\Mcp\Tools\RequestDocumentGenerationTool;
 
 /**
  * Este servidor proporciona capacidades de consulta y análisis de transacciones financieras.
@@ -29,7 +30,8 @@ class AiAssistantServer extends Server
         GetTransactionsByAmountRangeTool::class,
         GetAllTransactionsTool::class,
         GetTransactionByTypeTool::class,
-        ExecuteDocumentScriptTool::class,
+        RequestDocumentGenerationTool::class,
+        CheckDocumentStatusTool::class,
     ];
 
     protected array $resources = [
