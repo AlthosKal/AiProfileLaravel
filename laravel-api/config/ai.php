@@ -136,5 +136,5 @@ return [
         'init-timeout' => env('MCP_CLIENT_INIT-TIMEOUT', 30),
         'request-timeout' => env('MCP_CLIENT-REQ-TIMEOUT', 120),
         'max-retries' => env('MCP_CLIENT-MAX-RETRIES', 3),
-    ]
+    ],
 ];

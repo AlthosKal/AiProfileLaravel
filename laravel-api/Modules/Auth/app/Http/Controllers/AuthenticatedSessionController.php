@@ -26,6 +26,8 @@ class AuthenticatedSessionController extends Controller
      * redirigir al desafío 2FA, a verificación de email, o mostrar advertencia de
      * contraseña próxima a vencer según corresponda.
      *
+     * @unauthenticated
+     *
      * @throws Throwable
      */
     public function store(LoginData $data): JsonResponse

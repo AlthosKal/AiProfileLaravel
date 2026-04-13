@@ -24,6 +24,8 @@ class NewPasswordController extends Controller
     /**
      * Completar el reset de contraseña con el token y la nueva contraseña.
      *
+     * @unauthenticated
+     *
      * @throws Throwable
      */
     public function store(ResetPasswordData $data): JsonResponse

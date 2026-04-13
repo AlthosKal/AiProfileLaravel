@@ -85,13 +85,11 @@ abstract class McpProxyTool implements Tool
         foreach ($properties as $name => $definition) {
             $type = $this->mapPropertyToType($factory, $definition);
 
-            if ($type !== null) {
-                if (in_array($name, $required, true)) {
-                    $type = $type->required();
-                }
-
-                $result[$name] = $type;
+            if (in_array($name, $required, true)) {
+                $type = $type->required();
             }
+
+            $result[$name] = $type;
         }
 
         return $result;
@@ -99,8 +97,10 @@ abstract class McpProxyTool implements Tool
 
     /**
      * Convierte una definición de propiedad JSON Schema al tipo correspondiente de Laravel AI.
+     *
+     * @param  array<string, mixed>  $definition
      */
-    private function mapPropertyToType(JsonSchemaTypeFactory $factory, array $definition): ?Type
+    private function mapPropertyToType(JsonSchemaTypeFactory $factory, array $definition): Type
     {
         $type = match ($definition['type'] ?? 'string') {
             'integer', 'int' => $factory->integer(),

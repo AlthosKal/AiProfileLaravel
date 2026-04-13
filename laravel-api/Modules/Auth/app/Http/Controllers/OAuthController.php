@@ -19,6 +19,8 @@ class OAuthController extends Controller
      *
      * La estrategia concreta (Google, Outlook, etc.) se resuelve desde el
      * contenedor según el parámetro {provider} de la ruta.
+     *
+     * @unauthenticated
      */
     public function redirect(): RedirectResponse
     {
@@ -27,6 +29,8 @@ class OAuthController extends Controller
 
     /**
      * Procesar el callback del proveedor OAuth correspondiente.
+     *
+     * @unauthenticated
      */
     public function callback(): RedirectResponse
     {

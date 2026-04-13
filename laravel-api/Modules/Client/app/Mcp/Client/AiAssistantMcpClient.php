@@ -36,6 +36,9 @@ class AiAssistantMcpClient implements McpClientInterface
      *
      * @throws ConnectionException
      */
+    /**
+     * @param  array<string, string>  $headers
+     */
     public function connect(string $endpoint, array $headers): void
     {
         $this->client = $this->buildClient();
@@ -118,6 +121,9 @@ class AiAssistantMcpClient implements McpClientInterface
             ->build();
     }
 
+    /**
+     * @param  array<string, string>  $headers
+     */
     private function buildTransport(string $endpoint, array $headers): HttpTransport
     {
         return new HttpTransport(

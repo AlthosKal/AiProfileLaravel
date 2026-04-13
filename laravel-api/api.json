@@ -1,0 +1,784 @@
+{
+    "openapi": "3.1.0",
+    "info": {
+        "title": "AiProfile \u2014 Auth API",
+        "version": "0.0.1",
+        "description": "API de autenticaci\u00f3n y gesti\u00f3n de usuarios. Soporta registro, login, OAuth (Google), verificaci\u00f3n de email y reset de contrase\u00f1a. Los endpoints protegidos requieren un token Sanctum en el header `Authorization: Bearer {token}`."
+    },
+    "servers": [
+        {
+            "url": "http://localhost:8000/api/v1"
+        }
+    ],
+    "security": [
+        {
+            "http": []
+        }
+    ],
+    "paths": {
+        "/agent/prompt": {
+            "post": {
+                "operationId": "agent.prompt",
+                "tags": [
+                    "Agent"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/login": {
+            "post": {
+                "operationId": "login",
+                "description": "El token debe incluirse en el header `Authorization: Bearer {token}` en todos\nlos requests autenticados subsiguientes. Los flags post-login permiten al frontend\nredirigir al desaf\u00edo 2FA, a verificaci\u00f3n de email, o mostrar advertencia de\ncontrase\u00f1a pr\u00f3xima a vencer seg\u00fan corresponda.",
+                "summary": "Autenticar al usuario y retornar el token Sanctum junto con el estado post-login",
+                "tags": [
+                    "AuthenticatedSession"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean"
+                                        },
+                                        "status": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        },
+                                        "timestamp": {
+                                            "type": "string"
+                                        },
+                                        "path": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "success",
+                                        "status",
+                                        "data",
+                                        "timestamp",
+                                        "path"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
+                    }
+                },
+                "security": []
+            }
+        },
+        "/logout": {
+            "post": {
+                "operationId": "logout",
+                "description": "Con API token authentication el \"logout\" consiste en eliminar el token\nde la tabla personal_access_tokens. Solo se revoca el token del dispositivo\nactual \u2014 los tokens de otros dispositivos permanecen activos.",
+                "summary": "Revocar el token Sanctum del request actual",
+                "tags": [
+                    "AuthenticatedSession"
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No content"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/email/verification-notification": {
+            "post": {
+                "operationId": "verification.send",
+                "tags": [
+                    "EmailVerificationNotification"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean"
+                                        },
+                                        "status": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "type": "null"
+                                        },
+                                        "timestamp": {
+                                            "type": "string"
+                                        },
+                                        "path": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "success",
+                                        "status",
+                                        "data",
+                                        "timestamp",
+                                        "path"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/reset-password": {
+            "post": {
+                "operationId": "password.store",
+                "summary": "Completar el reset de contrase\u00f1a con el token y la nueva contrase\u00f1a",
+                "tags": [
+                    "NewPassword"
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ResetPasswordData"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean"
+                                        },
+                                        "status": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "type": "null"
+                                        },
+                                        "timestamp": {
+                                            "type": "string"
+                                        },
+                                        "path": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "success",
+                                        "status",
+                                        "data",
+                                        "timestamp",
+                                        "path"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
+                    }
+                },
+                "security": []
+            }
+        },
+        "/auth/{provider}/redirect": {
+            "get": {
+                "operationId": "oauth.redirect",
+                "description": "La estrategia concreta (Google, Outlook, etc.) se resuelve desde el\ncontenedor seg\u00fan el par\u00e1metro {provider} de la ruta.",
+                "summary": "Redirigir al proveedor OAuth correspondiente",
+                "tags": [
+                    "OAuth"
+                ],
+                "parameters": [
+                    {
+                        "name": "provider",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": []
+            }
+        },
+        "/auth/{provider}/callback": {
+            "get": {
+                "operationId": "oauth.callback",
+                "summary": "Procesar el callback del proveedor OAuth correspondiente",
+                "tags": [
+                    "OAuth"
+                ],
+                "parameters": [
+                    {
+                        "name": "provider",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": []
+            }
+        },
+        "/forgot-password": {
+            "post": {
+                "operationId": "password.email",
+                "summary": "Enviar el link de recuperaci\u00f3n de contrase\u00f1a al email indicado",
+                "tags": [
+                    "PasswordResetLink"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean"
+                                        },
+                                        "status": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "type": "null"
+                                        },
+                                        "timestamp": {
+                                            "type": "string"
+                                        },
+                                        "path": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "success",
+                                        "status",
+                                        "data",
+                                        "timestamp",
+                                        "path"
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": []
+            }
+        },
+        "/register": {
+            "post": {
+                "operationId": "register",
+                "description": "La validaci\u00f3n ocurre autom\u00e1ticamente al resolver RegisterUserData como\npar\u00e1metro del m\u00e9todo \u2014 si falla, Spatie Data lanza una ValidationException\nantes de llegar a este m\u00e9todo.\n\nRetorna 201 Created sin datos adicionales: el usuario debe verificar su\nemail antes de poder autenticarse.",
+                "summary": "Registrar un nuevo usuario en el sistema",
+                "tags": [
+                    "RegisteredUser"
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/RegisterUserData"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean"
+                                        },
+                                        "status": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "type": "null"
+                                        },
+                                        "timestamp": {
+                                            "type": "string"
+                                        },
+                                        "path": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "success",
+                                        "status",
+                                        "data",
+                                        "timestamp",
+                                        "path"
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": []
+            }
+        },
+        "/transactions/export": {
+            "get": {
+                "operationId": "transactions.export",
+                "tags": [
+                    "Transaction"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "text/html": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            },
+                            "application/json": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "headers": {
+                            "Transfer-Encoding": {
+                                "required": true,
+                                "schema": {
+                                    "type": "string",
+                                    "enum": [
+                                        "chunked"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/transactions/import": {
+            "post": {
+                "operationId": "transactions.import",
+                "tags": [
+                    "Transaction"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "format": {
+                                        "type": "string",
+                                        "default": ""
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/transactions": {
+            "get": {
+                "operationId": "api.transactions.index",
+                "tags": [
+                    "Transaction"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            },
+            "post": {
+                "operationId": "api.transactions.store",
+                "tags": [
+                    "Transaction"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/transactions/{id}": {
+            "get": {
+                "operationId": "api.transactions.show",
+                "tags": [
+                    "Transaction"
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            },
+            "put": {
+                "operationId": "api.transactions.update",
+                "tags": [
+                    "Transaction"
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            },
+            "delete": {
+                "operationId": "api.transactions.destroy",
+                "tags": [
+                    "Transaction"
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/verify-email/{id}/{hash}": {
+            "get": {
+                "operationId": "verification.verify",
+                "tags": [
+                    "VerifyEmail"
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "hash",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean"
+                                        },
+                                        "status": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "type": "null"
+                                        },
+                                        "timestamp": {
+                                            "type": "string"
+                                        },
+                                        "path": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "success",
+                                        "status",
+                                        "data",
+                                        "timestamp",
+                                        "path"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "securitySchemes": {
+            "http": {
+                "type": "http",
+                "scheme": "bearer"
+            }
+        },
+        "schemas": {
+            "RegisterUserData": {
+                "type": "object",
+                "description": "DTO para la solicitud de registro de un nuevo usuario.\n\nLas reglas de validaci\u00f3n de cada campo est\u00e1n divididas entre atributos PHP\nen el constructor (validaciones simples) y el m\u00e9todo `rules()` (validaciones\nque requieren l\u00f3gica adicional, como verificar unicidad del email en la DB).",
+                "properties": {
+                    "email": {
+                        "type": "string",
+                        "format": "email",
+                        "maxLength": 254
+                    }
+                },
+                "required": [
+                    "email"
+                ],
+                "title": "RegisterUserData"
+            },
+            "ResetPasswordData": {
+                "type": "object",
+                "description": "DTO para la solicitud de reset de contrase\u00f1a.\n\nRecibe el token generado por el broker, el email del usuario\ny la nueva contrase\u00f1a con su confirmaci\u00f3n. El token y el email\nson validados por `Password::reset()` internamente, por lo que\naqu\u00ed solo se garantiza presencia y formato b\u00e1sico.",
+                "properties": {
+                    "password": {
+                        "type": "string"
+                    },
+                    "password_confirmation": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "password",
+                    "password_confirmation"
+                ],
+                "title": "ResetPasswordData"
+            }
+        },
+        "responses": {
+            "ValidationException": {
+                "description": "Validation error",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "message": {
+                                    "type": "string",
+                                    "description": "Errors overview."
+                                },
+                                "errors": {
+                                    "type": "object",
+                                    "description": "A detailed description of each field that failed validation.",
+                                    "additionalProperties": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            },
+                            "required": [
+                                "message",
+                                "errors"
+                            ]
+                        }
+                    }
+                }
+            },
+            "AuthenticationException": {
+                "description": "Unauthenticated",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "message": {
+                                    "type": "string",
+                                    "description": "Error overview."
+                                }
+                            },
+                            "required": [
+                                "message"
+                            ]
+                        }
+                    }
+                }
+            },
+            "AuthorizationException": {
+                "description": "Authorization error",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "message": {
+                                    "type": "string",
+                                    "description": "Error overview."
+                                }
+                            },
+                            "required": [
+                                "message"
+                            ]
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

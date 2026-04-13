@@ -10,6 +10,7 @@
     "license": "MIT",
     "require": {
         "php": "^8.3",
+        "dedoc/scramble": "^0.13.18",
         "josiasmontag/laravel-recaptchav3": "^1.0",
         "laravel/ai": "^0.4.5",
         "laravel/framework": "^13.0",

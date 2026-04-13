@@ -24,6 +24,8 @@ class RegisteredUserController extends Controller
      *
      * Retorna 201 Created sin datos adicionales: el usuario debe verificar su
      * email antes de poder autenticarse.
+     *
+     * @unauthenticated
      */
     public function store(RegisterUserData $data): JsonResponse
     {

@@ -22,6 +22,8 @@ class PasswordResetLinkController extends Controller
 
     /**
      * Enviar el link de recuperación de contraseña al email indicado.
+     *
+     * @unauthenticated
      */
     public function store(PasswordResetLinkData $data): JsonResponse
     {

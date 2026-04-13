@@ -1,0 +1,526 @@
+{
+    "openapi": "3.1.0",
+    "info": {
+        "title": "AiProfile \u2014 MCP Transactions API",
+        "version": "0.0.1",
+        "description": "API de transacciones financieras con soporte MCP. Permite crear, consultar, actualizar, eliminar, exportar e importar transacciones. Todos los endpoints requieren un JWT firmado por el gateway en el header `Authorization: Bearer {token}`."
+    },
+    "servers": [
+        {
+            "url": "http://localhost:8001/api/v1"
+        }
+    ],
+    "security": [
+        {
+            "http": []
+        }
+    ],
+    "paths": {
+        "/user": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "email": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "email"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/transactions/export": {
+            "get": {
+                "operationId": "transaction.export",
+                "summary": "Exporta las transacciones del usuario en el formato y rango de fechas indicados",
+                "tags": [
+                    "Transaction"
+                ],
+                "parameters": [
+                    {
+                        "name": "format",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/components/schemas/ExportFormat"
+                        }
+                    },
+                    {
+                        "name": "date_from",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "date-time"
+                        }
+                    },
+                    {
+                        "name": "date_to",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "date-time"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
+                    }
+                }
+            }
+        },
+        "/transactions/import": {
+            "post": {
+                "operationId": "transaction.import",
+                "summary": "Importa transacciones desde un archivo en el formato indicado",
+                "tags": [
+                    "Transaction"
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ImportTransactionRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean"
+                                        },
+                                        "status": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "type": "null"
+                                        },
+                                        "timestamp": {
+                                            "type": "string"
+                                        },
+                                        "path": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "success",
+                                        "status",
+                                        "data",
+                                        "timestamp",
+                                        "path"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
+                    }
+                }
+            }
+        },
+        "/transactions": {
+            "get": {
+                "operationId": "api.transactions.index",
+                "summary": "Retorna todas las transacciones del usuario autenticado",
+                "tags": [
+                    "Transaction"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean"
+                                        },
+                                        "status": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "type": "object",
+                                            "additionalProperties": {}
+                                        },
+                                        "timestamp": {
+                                            "type": "string"
+                                        },
+                                        "path": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "success",
+                                        "status",
+                                        "data",
+                                        "timestamp",
+                                        "path"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            },
+            "post": {
+                "operationId": "api.transactions.store",
+                "summary": "Crea una nueva transacci\u00f3n para el usuario autenticado",
+                "tags": [
+                    "Transaction"
+                ],
+                "responses": {
+                    "201": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean"
+                                        },
+                                        "status": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "type": "null"
+                                        },
+                                        "timestamp": {
+                                            "type": "string"
+                                        },
+                                        "path": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "success",
+                                        "status",
+                                        "data",
+                                        "timestamp",
+                                        "path"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/transactions/{id}": {
+            "get": {
+                "operationId": "api.transactions.show",
+                "summary": "Retorna una transacci\u00f3n espec\u00edfica del usuario autenticado",
+                "tags": [
+                    "Transaction"
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean"
+                                        },
+                                        "status": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/GetTransactionResponseData"
+                                            }
+                                        },
+                                        "timestamp": {
+                                            "type": "string"
+                                        },
+                                        "path": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "success",
+                                        "status",
+                                        "data",
+                                        "timestamp",
+                                        "path"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            },
+            "put": {
+                "operationId": "api.transactions.update",
+                "summary": "Actualiza una transacci\u00f3n existente del usuario autenticado",
+                "tags": [
+                    "Transaction"
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean"
+                                        },
+                                        "status": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "type": "null"
+                                        },
+                                        "timestamp": {
+                                            "type": "string"
+                                        },
+                                        "path": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "success",
+                                        "status",
+                                        "data",
+                                        "timestamp",
+                                        "path"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            },
+            "delete": {
+                "operationId": "api.transactions.destroy",
+                "summary": "Elimina una transacci\u00f3n del usuario autenticado",
+                "tags": [
+                    "Transaction"
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No content",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean"
+                                        },
+                                        "status": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "type": "null"
+                                        },
+                                        "timestamp": {
+                                            "type": "string"
+                                        },
+                                        "path": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "success",
+                                        "status",
+                                        "data",
+                                        "timestamp",
+                                        "path"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "securitySchemes": {
+            "http": {
+                "type": "http",
+                "scheme": "bearer",
+                "bearerFormat": "JWT"
+            }
+        },
+        "schemas": {
+            "ExportFormat": {
+                "type": "string",
+                "description": "Formatos de archivo soportados para importaci\u00f3n y exportaci\u00f3n. Act\u00faa como punto \u00fanico de registro de formatos v\u00e1lidos y como f\u00e1brica de las estrategias concretas. Para agregar un nuevo formato basta con:   1. A\u00f1adir un nuevo case a este enum.   2. Crear las clases Strategy correspondientes en Shared.   3. Mapearlas en los m\u00e9todos resolve* \u2014 sin tocar ning\u00fan m\u00f3dulo de dominio.\n",
+                "enum": [
+                    "excel",
+                    "csv"
+                ],
+                "title": "ExportFormat"
+            },
+            "GetTransactionResponseData": {
+                "type": "object",
+                "additionalProperties": {},
+                "title": "GetTransactionResponseData"
+            },
+            "ImportTransactionRequest": {
+                "type": "object",
+                "properties": {
+                    "format": {
+                        "$ref": "#/components/schemas/ExportFormat"
+                    },
+                    "file": {
+                        "type": "string",
+                        "format": "binary",
+                        "contentMediaType": "application/octet-stream",
+                        "maxLength": 10240
+                    }
+                },
+                "required": [
+                    "format",
+                    "file"
+                ],
+                "title": "ImportTransactionRequest"
+            }
+        },
+        "responses": {
+            "AuthenticationException": {
+                "description": "Unauthenticated",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "message": {
+                                    "type": "string",
+                                    "description": "Error overview."
+                                }
+                            },
+                            "required": [
+                                "message"
+                            ]
+                        }
+                    }
+                }
+            },
+            "ValidationException": {
+                "description": "Validation error",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "message": {
+                                    "type": "string",
+                                    "description": "Errors overview."
+                                },
+                                "errors": {
+                                    "type": "object",
+                                    "description": "A detailed description of each field that failed validation.",
+                                    "additionalProperties": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            },
+                            "required": [
+                                "message",
+                                "errors"
+                            ]
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

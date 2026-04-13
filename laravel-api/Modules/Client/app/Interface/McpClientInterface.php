@@ -7,6 +7,9 @@ use Mcp\Schema\Result\ListToolsResult;
 
 interface McpClientInterface
 {
+    /**
+     * @param  array<string, string>  $headers
+     */
     public function connect(string $endpoint, array $headers): void;
 
     public function listTools(): ListToolsResult;
